@@ -1,0 +1,8 @@
+# Evita añadir por accidente copias personales con git.
+*.pdf
+*.PDF
+*.zip
+*.ocr.json
+private-imports/
+txt/
+node_modules/

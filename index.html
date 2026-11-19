@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>V for Victory — Consulta rápida de reglamento</title>
+<meta name="description" content="Consulta de reglamento para V for Victory: dudas de mesa, tablas de disparo, detección, moral, vehículos y suplementos. Funciona sin conexión." />
+<meta name="theme-color" content="#14161a" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="icon" type="image/png" href="icons/icon-192.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="v">V</div>
+      <div>
+        <h1>V for Victory</h1>
+        <small>Mesa de consulta</small>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button data-view="buscar" class="on"><span class="ico">🔍</span> Buscar</button>
+      <button data-view="temas"><span class="ico">📖</span> Temas</button>
+      <button data-view="faq"><span class="ico">❓</span> Preguntas</button>
+      <button data-view="secuencia"><span class="ico">🕐</span> Turno paso a paso</button>
+      <button data-view="tablas"><span class="ico">📊</span> Tablas</button>
+      <button data-view="mesa"><span class="ico">🎲</span> Herramientas</button>
+      <button data-view="gce"><span class="ico">🇪🇸</span> Suplemento GCE</button>
+      <button data-view="docs"><span class="ico">📄</span> Mis libros</button>
+    </nav>
+
+    <div class="install-controls">
+  <button class="btn" id="install-app">Cómo instalar</button>
+  <button class="btn" id="update-app" hidden>Actualizar aplicación</button>
+  <p id="offline-status" role="status">Preparando modo sin conexión…</p>
+</div><div class="sep"></div>
+    <div class="hint">
+      Atajo: pulsa <span class="kbd">/</span> para buscar.<br />
+      Consulta y libros locales sin conexión.
+    </div>
+  </aside>
+
+  <div class="content-area"><section class="card" id="install-help" hidden>
+<button class="btn" id="close-install-help">Cerrar</button><h2>Instalar en el móvil</h2>
+<p><b>iPhone/iPad:</b> abre esta web en Safari, pulsa Compartir y Añadir a pantalla de inicio.</p>
+<p><b>Android:</b> abre en Chrome y usa Instalar aplicación o Añadir a pantalla de inicio en el menú.</p>
+<p>Abre la aplicación instalada antes de importar tus libros. Espera a que aparezca «Disponible sin conexión» y comprueba una vez el modo avión. Tus libros son locales y no se sincronizan.</p>
+</section><main class="main" id="main"></main></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data/rules.js"></script>
+<script src="data/topics.js"></script>
+<script src="data/faq.js"></script>
+<script src="data/tablas.js"></script>
+<script src="data/gce.js"></script>
+<script src="data/events.js"></script>
+<script src="search.js"></script>
+<script src="local-books.js"></script>
+<script src="app.js"></script>
+<script src="pwa.js"></script>
+</body>
+</html>
