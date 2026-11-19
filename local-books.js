@@ -111,15 +111,17 @@ window.VFV_LOCAL = (() => {
     const pages = Array.isArray(payload) ? payload : payload.pages;
     if (!Array.isArray(pages) || !pages.length) throw new Error('El OCR debe contener una lista de páginas.');
     const seen = new Set();
-    const max = Math.max(...pages.map(p => (Number.isInteger(p.page) ? p.page : 0)));
-    if (max > book.pageCount) {
+    const limit = Number.isInteger(book.pageCount) && book.pageCount > 0 ? book.pageCount : 0;
+    if (!limit) throw new Error('El PDF importado no tiene un número de páginas válido. Vuelve a importarlo.');
+    const max = pages.reduce((m, p) => (Number.isInteger(p.page) && p.page > m ? p.page : m), 0);
+    if (max > limit) {
       const titulo = (window.VFV_RULES.documents.find(d => d.id === id) || {}).short || id;
       throw new Error('Este OCR llega hasta la página ' + max + ', pero el PDF importado en «' + titulo + '» (' + book.name + ') solo tiene ' +
         book.pageCount + ' páginas. Comprueba que has importado el PDF que corresponde a este apartado.');
     }
     const clean = pages.map(p => {
-      if (!Number.isInteger(p.page) || p.page < 1 || typeof p.text !== 'string')
-        throw new Error('El OCR contiene una página sin número válido o sin texto.');
+      if (!Number.isInteger(p.page) || p.page < 1 || p.page > limit || typeof p.text !== 'string')
+        throw new Error('El OCR contiene una página sin número válido, fuera del PDF o sin texto.');
       if (seen.has(p.page)) throw new Error('El OCR repite la página ' + p.page + '.');
       seen.add(p.page);
       return { page: p.page, text: p.text };
