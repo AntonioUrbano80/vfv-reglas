@@ -27,6 +27,13 @@ const state = {
   openFaq: new Set(),
 };
 
+// Vistas que cuelgan de la pestaña «Más» de la barra inferior.
+const GRUPO_MAS = ['mas', 'secuencia', 'mesa', 'gce', 'docs'];
+const VISTAS = ['buscar', 'temas', 'faq', 'tablas', ...GRUPO_MAS];
+
+// Abreviatura de cada libro en los sellos de página.
+const SIGLA = { crb: 'Regl.', e43: '39–43', gce: 'GCE' };
+
 /* ---------------- utilidades ---------------- */
 function toast(msg) {
   toastEl.textContent = msg;
@@ -39,6 +46,10 @@ function el(html) {
   const t = document.createElement('template');
   t.innerHTML = html.trim();
   return t.content.firstElementChild;
+}
+
+function icon(id, cls = '') {
+  return `<svg class="${cls}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
 }
 
 function pageUrl(docId, page) {
@@ -56,25 +67,27 @@ function stripHtml(html) {
     .replace(/\s+/g, ' ');
 }
 
+// Sello de página: el libro abreviado y la página del PDF.
+function pagHtml(r) {
+  const d = DOCS[r.doc];
+  const sigla = SIGLA[r.doc] || (d ? d.short : r.doc);
+  return `<a class="pag" href="${pageUrl(r.doc, r.page)}" data-local-doc="${r.doc}" data-page="${r.page}" target="_blank" rel="noopener"
+    title="Abrir ${d ? VFV.escapeHtml(d.title) : r.doc} en la página ${r.page} del PDF"><small>${sigla}</small>${r.page}</a>`;
+}
+
 function refsHtml(refs) {
   if (!refs || !refs.length) return '';
-  const items = refs.map((r) => {
-    const d = DOCS[r.doc];
-    const label = d ? d.short : r.doc;
-    return `<a href="${pageUrl(r.doc, r.page)}" data-local-doc="${r.doc}" data-page="${r.page}" target="_blank" rel="noopener"
-      title="Abrir ${d ? d.title : r.doc} en la página ${r.page} del PDF">${label} p. ${r.page} ↗</a>`;
-  });
-  return `<div class="refs"><strong>Fuente:</strong> ${items.join(' ')}</div>`;
+  return `<div class="refs"><strong>Fuente</strong> ${refs.map(pagHtml).join('')}</div>`;
 }
 
 // Las fuentes externas se abren solo cuando el jugador lo solicita.
 function onlineHtml(query) {
   const q = encodeURIComponent('V for Victory rules ' + query);
   const official = encodeURIComponent('site:studio-tomahawk.com V for Victory ' + query);
-  return '<details class="card external"><summary>Consultar en internet</summary>' +
-    '<p>Abre una búsqueda externa. La aplicación no lee ni verifica sus resultados. Prioriza publicaciones oficiales; una opinión de foro debe identificarse como interpretación.</p>' +
-    '<a target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=' + official + '">Buscar en Studio Tomahawk</a> · ' +
-    '<a target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=' + q + '">Buscar aclaraciones y foros</a></details>';
+  return '<details class="external"><summary>Consultar en internet</summary>' +
+    '<p>Abre una búsqueda externa. La aplicación no lee ni verifica sus resultados. Prioriza publicaciones oficiales; una opinión de foro es una interpretación.</p>' +
+    '<p><a target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=' + official + '">Buscar en Studio Tomahawk</a><br>' +
+    '<a target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=' + q + '">Buscar aclaraciones y foros</a></p></details>';
 }
 function sourceKind(refs) {
   if ((refs || []).some(r => r.doc === 'gce')) return 'Suplemento no oficial';
@@ -84,7 +97,7 @@ function relatedHtml(entry) {
   const ids = entry.related || [];
   const related = FAQ.filter(f => ids.includes(f.id));
   if (!related.length) return '';
-  return '<details class="source-detail"><summary>Reglas y FAQ relacionadas (' + related.length + ')</summary>' +
+  return '<details class="source-detail"><summary>Reglas y preguntas relacionadas (' + related.length + ')</summary>' +
     related.map(f => '<div class="related-rule"><b>' + VFV.escapeHtml(f.q) + '</b>' + f.html + refsHtml(f.refs) + '</div>').join('') + '</details>';
 }
 function answerHtml(entry) {
@@ -112,7 +125,7 @@ window.addEventListener('hashchange', () => {
     render();
     return;
   }
-  if (v && v !== state.view) {
+  if (v && v !== state.view && VISTAS.includes(v)) {
     state.view = v;
     render();
   }
@@ -120,9 +133,14 @@ window.addEventListener('hashchange', () => {
 
 /* ---------------- vistas ---------------- */
 function render() {
+  const tab = GRUPO_MAS.includes(state.view) ? 'mas' : state.view;
   for (const b of nav.querySelectorAll('button')) {
-    b.classList.toggle('on', b.dataset.view === state.view);
+    const on = b.dataset.view === tab;
+    b.classList.toggle('on', on);
+    if (on) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
   }
+  document.body.dataset.view = state.view;
   main.innerHTML = '';
   const fn = {
     buscar: viewBuscar,
@@ -133,29 +151,32 @@ function render() {
     mesa: viewMesa,
     gce: viewGce,
     docs: viewDocs,
+    mas: viewMas,
   }[state.view] || viewBuscar;
   fn();
 }
 
 /* ---------- 1. BUSCAR ---------- */
+const SUGERENCIAS = ['cobertura pesada', 'fuego reactivo', 'chequeo de moral', 'empate de iniciativa', 'correr', 'embarcar en transporte'];
+
 function viewBuscar() {
   const wrap = el(`
     <section>
-      <h2 class="page-title">Buscar en el reglamento</h2>
-      <p class="sub">Escribe lo que te está pasando en la mesa, en castellano o en inglés: primero busca en las
-      explicaciones y en las preguntas, y luego en el texto original.</p>
+      <h2 class="page-title">¿Qué pasa en la mesa?</h2>
+      <p class="sub">Escribe la duda en castellano o en inglés.</p>
       <div class="searchbox">
-        <span class="glass">🔍</span>
-        <input id="q" type="search" placeholder="Ej.: cobertura pesada, fuego reactivo, chequeo de moral, vehículo descubierto…" />
-        <button class="clear" id="clearq" title="Borrar">×</button>
+        ${icon('buscar', 'glass')}
+        <input id="q" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
+          placeholder="cobertura pesada, fall back, moral…" aria-label="Buscar en el reglamento" />
+        <button class="clear" id="clearq" type="button" aria-label="Borrar la búsqueda">${icon('cerrar')}</button>
       </div>
-      <div class="filters" id="filters">
+      <div class="filters" id="filters" role="group" aria-label="Dónde buscar">
         <button class="chip on" data-doc="">Todo</button>
         <button class="chip" data-doc="crb">Reglamento</button>
-        <button class="chip" data-doc="e43">Suplemento 39-43</button>
-        <button class="chip" data-doc="gce">Suplemento GCE</button>
+        <button class="chip" data-doc="e43">39–43</button>
+        <button class="chip" data-doc="gce">GCE</button>
       </div>
-      <div class="note">Los temas y preguntas funcionan sin libros. Para consultar los originales, importa tus PDF en <a href="#docs">Mis libros</a>. Solo se busca dentro de las páginas con texto local.</div><div id="results"></div>
+      <div id="results"></div>
     </section>
   `);
 
@@ -171,12 +192,17 @@ function viewBuscar() {
     state.query = input.value;
     const q = state.query.trim();
     if (q.length < 2) {
-      results.innerHTML = `<div class="card" style="color:var(--dim);font-size:13.6px">
-        Escribe al menos 2 letras. También puedes probar con los <a href="#temas">temas</a>
-        o las <a href="#faq">preguntas frecuentes</a>.<br><br>
-        <span style="font-size:12.5px">El texto del reglamento está en inglés (OCR del escaneo): busca
-        <em>cover</em>, <em>reactive fire</em>, <em>morale check</em>, <em>assault</em>… El suplemento de la
-        Guerra Civil está en español.</span></div>`;
+      results.innerHTML = `<h3 class="sec-head">Prueba con</h3>
+        <div class="sugerencias">${SUGERENCIAS.map((s) => `<button type="button">${s}</button>`).join('')}</div>
+        <p class="ayuda-busqueda">El texto original del reglamento está en inglés: ahí funcionan mejor
+        <em>cover</em>, <em>reactive fire</em> o <em>morale check</em>. El suplemento GCE está en castellano.
+        ${window.VFV_LOCAL ? 'Para buscar dentro de los libros, impórtalos en <a href="#docs">Mis libros</a>.' : ''}</p>`;
+      for (const b of results.querySelectorAll('.sugerencias button')) {
+        b.addEventListener('click', () => {
+          input.value = b.textContent;
+          doSearch();
+        });
+      }
       return;
     }
     const terms = VFV.tokenize(q);
@@ -184,56 +210,58 @@ function viewBuscar() {
     const expl = VFV.searchEntries(TOPICS, FAQ, q, state.docFilter);
 
     if (!hits.length && !expl.length) {
-      results.innerHTML = onlineHtml(q) + `<div class="card"><b>Sin resultados para «${VFV.escapeHtml(q)}».</b><br>
-        <span style="font-size:13.4px;color:var(--dim)">Prueba con menos palabras o con sinónimos
-        (por ejemplo <em>cover</em> en vez de «cobertura»).</span></div>`;
+      results.innerHTML = `<p class="contador">Sin resultados para «${VFV.escapeHtml(q)}».</p>
+        <p class="ayuda-busqueda">Prueba con menos palabras o en inglés: <em>cover</em> en vez de «cobertura».</p>` + onlineHtml(q);
       return;
     }
 
-    let html = onlineHtml(q);
+    let html = '';
 
     if (expl.length) {
-      html += `<h3 class="sec-head">En castellano (${expl.length})</h3><div class="ans-list">`;
+      html += `<h3 class="sec-head">Temas y preguntas <span class="n">${expl.length}</span></h3><div class="ans-list">`;
       html += expl
         .map((x) => {
           if (x.tipo === 'tema') {
             return `<div class="ans" data-tipo="tema" data-id="${x.id}">
-              <div class="ans-top"><span class="badge">Tema</span>
-              <b>${VFV.escapeHtml(x.titulo)}</b></div>
+              <div class="ans-top">
+                <span class="tipo">${icon('temas')} Tema de ${VFV.escapeHtml((x.cat || '').toLowerCase())}</span>
+                <b>${VFV.highlight(x.titulo, terms)}</b>
+                <span class="pags">${(x.refs || []).slice(0, 2).map(pagHtml).join('')}</span>
+              </div>
               <p>${VFV.highlight(x.resumen, terms)}</p></div>`;
           }
           return `<div class="ans" data-tipo="faq" data-id="${x.id}">
-            <div class="ans-top"><span class="badge q">Pregunta</span>
-            <b>${VFV.highlight(x.q, terms)}</b></div>
-            ${answerHtml(x)}</div>`;
+            <div class="ans-top">
+              <span class="tipo">${icon('preguntas')} Pregunta de ${VFV.escapeHtml((x.cat || '').toLowerCase())}</span>
+              <b>${VFV.highlight(x.q, terms)}</b>
+            </div>
+            <div class="faq-body">${answerHtml(x)}</div></div>`;
         })
         .join('');
       html += '</div>';
     }
 
     if (hits.length) {
-      html += `<h3 class="sec-head">Texto original del reglamento (${hits.length} página/s)</h3>`;
+      html += `<h3 class="sec-head">Texto original <span class="n">${hits.length} ${hits.length === 1 ? 'página' : 'páginas'}</span></h3><div class="hits">`;
       html += hits
         .map((h) => {
           const p = h.page;
-          return `<a class="hit" href="${pageUrl(p.docId, p.page)}" target="_blank" rel="noopener"
-              style="display:block;color:inherit;text-decoration:none" data-doc="${p.docId}" data-page="${p.page}">
-            <div class="top">
-              <span class="src">${VFV.escapeHtml(p.docTitle)}</span>
-              <span class="pg">pág. ${p.page} del PDF ↗</span>
-            </div>
+          return `<a class="hit" href="${pageUrl(p.docId, p.page)}" target="_blank" rel="noopener" data-doc="${p.docId}" data-page="${p.page}">
+            <span class="src">${VFV.escapeHtml(p.docTitle)}</span>
+            <span class="pag" data-doc="${p.docId}"><small>${SIGLA[p.docId] || ''}</small>${p.page}</span>
             <p>${VFV.highlight(h.snippet, terms)}</p>
           </a>`;
         })
         .join('');
+      html += '</div>';
     }
 
-    results.innerHTML = html;
+    results.innerHTML = html + onlineHtml(q);
 
     for (const a of results.querySelectorAll('.ans')) {
       a.addEventListener('click', (e) => {
-        // los enlaces «Fuente» abren el PDF: no deben además cambiar de vista
-        if (e.target.closest('a')) return;
+        // los sellos de página abren el PDF: no deben además cambiar de vista
+        if (e.target.closest('a, summary, details')) return;
         if (a.dataset.tipo === 'tema') go('temas', { topicId: a.dataset.id });
         else {
           state.openFaq.add(a.dataset.id);
@@ -259,7 +287,6 @@ function viewBuscar() {
 
   main.appendChild(wrap);
   doSearch();
-  if (!state.query) input.focus();
 }
 
 function debounce(fn, ms) {
@@ -282,8 +309,8 @@ function viewTemas() {
 
   const wrap = el(`
     <section>
-      <h2 class="page-title">Temas del reglamento</h2>
-      <p class="sub">${TOPICS.length} explicaciones en castellano, ordenadas como se juega. Cada una enlaza a la página exacta del PDF.</p>
+      <h2 class="page-title">Temas</h2>
+      <p class="sub">${TOPICS.length} explicaciones en castellano, ordenadas como se juega.</p>
       <div id="tg"></div>
     </section>
   `);
@@ -301,20 +328,18 @@ function viewTemas() {
   }
 
   for (const g of grupos) {
-    tg.appendChild(el(`<h3 class="cat-head">${VFV.escapeHtml(g.cat)}</h3>`));
-    const grid = el('<div class="topic-grid"></div>');
+    tg.appendChild(el(`<h3 class="cat-head">${VFV.escapeHtml(g.cat)} <span class="n">${g.items.length}</span></h3>`));
+    const list = el('<ul class="lista"></ul>');
     for (const t of g.items) {
-      const card = el(`
-        <div class="topic" data-id="${t.id}">
-          <span class="ico">${t.icono || '📄'}</span>
-          <h3>${VFV.escapeHtml(t.titulo)}</h3>
-          <p>${VFV.escapeHtml(t.resumen || '')}</p>
-        </div>
-      `);
-      card.addEventListener('click', () => go('temas', { topicId: t.id }));
-      grid.appendChild(card);
+      const li = el(`<li><button data-id="${t.id}">
+          <b>${VFV.escapeHtml(t.titulo)}</b>
+          <span class="res">${VFV.escapeHtml(t.resumen || '')}</span>
+          ${icon('flecha', 'flecha')}
+        </button></li>`);
+      li.querySelector('button').addEventListener('click', () => go('temas', { topicId: t.id }));
+      list.appendChild(li);
     }
-    tg.appendChild(grid);
+    tg.appendChild(list);
   }
 
   main.appendChild(wrap);
@@ -325,13 +350,13 @@ function viewTopic(id) {
   if (!t) return go('temas', { topicId: null });
   const wrap = el(`
     <section class="article">
-      <button class="btn" id="back" style="margin-bottom:16px">← Todos los temas</button>
-      <h2 class="page-title">${t.icono || ''} ${VFV.escapeHtml(t.titulo)}</h2>
+      <button class="volver" id="back" type="button">${icon('volver')} Temas</button>
+      <h2 class="page-title">${VFV.escapeHtml(t.titulo)}</h2>
       ${t.html}
       ${refsHtml(t.refs)}${relatedHtml(t)}
-      <div style="margin-top:22px">
-        <button class="btn" id="tosearch">Buscar en el texto original</button>
-      </div>
+      <p style="margin-top:22px">
+        <button class="btn" id="tosearch" type="button">${icon('buscar')} Buscar en el texto original</button>
+      </p>
     </section>
   `);
   wrap.querySelector('#back').addEventListener('click', () => go('temas', { topicId: null }));
@@ -341,22 +366,22 @@ function viewTopic(id) {
   main.appendChild(wrap);
 }
 
-/* ---------- 3. FAQ ---------- */
+/* ---------- 3. PREGUNTAS ---------- */
 function viewFaq() {
   const cats = [...new Set(FAQ.map((f) => f.cat))];
   const wrap = el(`
     <section>
-      <h2 class="page-title">Preguntas frecuentes</h2>
-      <p class="sub">Dudas típicas de partida, con la respuesta corta y su respaldo en el reglamento.</p>
-      <div class="searchbox" style="margin-bottom:14px">
-        <span class="glass">🔍</span>
-        <input id="fq" type="search" placeholder="Filtrar preguntas…" />
+      <h2 class="page-title">Preguntas de mesa</h2>
+      <p class="sub">${FAQ.length} dudas típicas con respuesta corta y su página.</p>
+      <div class="searchbox small">
+        ${icon('buscar', 'glass')}
+        <input id="fq" type="search" autocomplete="off" placeholder="Filtrar preguntas" aria-label="Filtrar preguntas" />
       </div>
-      <div class="filters" id="fc">
+      <div class="filters" id="fc" role="group" aria-label="Categoría">
         <button class="chip on" data-cat="">Todas</button>
         ${cats.map((c) => `<button class="chip" data-cat="${VFV.escapeHtml(c)}">${VFV.escapeHtml(c)}</button>`).join('')}
       </div>
-      <div id="list"></div>
+      <div id="list" class="faq-list"></div>
     </section>
   `);
 
@@ -373,23 +398,27 @@ function viewFaq() {
         (!found || found.has(f.id))
     );
     if (!items.length) {
-      list.innerHTML = `<div class="card" style="color:var(--dim)">Ninguna pregunta coincide.</div>`;
+      list.innerHTML = `<p class="contador">Ninguna pregunta coincide. Prueba con otra palabra o elige «Todas».</p>`;
       return;
     }
     list.innerHTML = items
-      .map(
-        (f) => `
-      <div class="faq ${state.openFaq.has(f.id) ? 'open' : ''}" data-id="${f.id}">
-        <button><span class="q">?</span><span>${VFV.escapeHtml(f.q)}</span><span class="caret">▸</span></button>
+      .map((f) => {
+        const open = state.openFaq.has(f.id);
+        return `
+      <div class="faq ${open ? 'open' : ''}" data-id="${f.id}">
+        <button type="button" aria-expanded="${open}">${icon('flecha', 'caret')}<span>${VFV.escapeHtml(f.q)}</span></button>
         <div class="a">${answerHtml(f)}</div>
-      </div>`
-      )
+      </div>`;
+      })
       .join('');
     for (const box of list.querySelectorAll('.faq')) {
-      box.querySelector('button').addEventListener('click', () => {
+      const btn = box.querySelector('button');
+      btn.addEventListener('click', () => {
         const id = box.dataset.id;
         box.classList.toggle('open');
-        if (box.classList.contains('open')) state.openFaq.add(id);
+        const open = box.classList.contains('open');
+        btn.setAttribute('aria-expanded', open);
+        if (open) state.openFaq.add(id);
         else state.openFaq.delete(id);
       });
     }
@@ -469,23 +498,22 @@ function viewSecuencia() {
   const KEY = 'vfv.seq.' + new Date().toDateString();
   const done = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
   const wrap = el(`<section>
+    <button class="volver" id="back" type="button">${icon('volver')} Más</button>
     <h2 class="page-title">El turno, paso a paso</h2>
-    <p class="sub">Marca las casillas durante la partida; se guardan hasta mañana. <button class="btn" id="reset" style="padding:4px 10px;font-size:12px">Reiniciar</button></p>
+    <p class="sub">Marca cada paso durante la partida. Las marcas se guardan hasta mañana.</p>
+    <button class="btn" id="reset" type="button">Desmarcar todo</button>
     <div id="seq"></div>
   </section>`);
   const box = wrap.querySelector('#seq');
 
   SECUENCIA.forEach((bloque, bi) => {
-    const card = el(`<div class="card" style="margin-bottom:14px">
-      <h3 style="margin:0 0 10px;font-size:15px;color:var(--acc)">${bloque.fase}</h3>
-      <div class="steps"></div>
-    </div>`);
-    const steps = card.querySelector('.steps');
+    const fase = el(`<div class="fase"><h3>${bloque.fase}</h3><div class="steps"></div></div>`);
+    const steps = fase.querySelector('.steps');
     bloque.pasos.forEach((p, i) => {
       const id = `${bi}-${i}`;
       const row = el(`<label class="check ${done.has(id) ? 'done' : ''}">
         <input type="checkbox" ${done.has(id) ? 'checked' : ''} />
-        <span><span class="step-num">${i + 1}</span>${VFV.escapeHtml(p)}</span>
+        <span><span class="step-num">${i + 1}.</span> ${VFV.escapeHtml(p)}</span>
       </label>`);
       const cb = row.querySelector('input');
       cb.addEventListener('change', () => {
@@ -496,9 +524,10 @@ function viewSecuencia() {
       });
       steps.appendChild(row);
     });
-    box.appendChild(card);
+    box.appendChild(fase);
   });
 
+  wrap.querySelector('#back').addEventListener('click', () => go('mas'));
   wrap.querySelector('#reset').addEventListener('click', () => {
     localStorage.removeItem(KEY);
     render();
@@ -509,113 +538,171 @@ function viewSecuencia() {
 
 /* ---------- 5. TABLAS ---------- */
 const TABLAS = window.VFV_TABLAS || [];
+const TABLA_CORTA = {
+  turno: 'Turno', distancias: 'Medidas', spotting: 'Detección', disparo: 'Disparo', defensa: 'Defensa',
+  at: 'Antitanque', 'armas-ligeras': 'Armas ligeras', asalto: 'Asalto', moral: 'Moral', danio: 'Daño',
+  terreno: 'Terreno', montajes: 'Montajes',
+};
 
 function viewTablas() {
   const wrap = el(`<section>
-    <h2 class="page-title">Tablas y modificadores</h2>
-    <p class="sub">Lo que más se consulta a media partida, en una sola pantalla. Reconstruidas desde las páginas de reglas: el escaneo no incluye la hoja de referencia rápida del libro.</p>
-    <div class="filters" id="tnav"></div>
+    <h2 class="page-title">Tablas</h2>
+    <nav class="segmentos" id="tnav" aria-label="Ir a la tabla"></nav>
     <div id="tb"></div>
+    <p class="note-line">Reconstruidas desde las páginas de reglas: el escaneo no trae la hoja de referencia rápida.</p>
   </section>`);
 
   const nav2 = wrap.querySelector('#tnav');
   const tb = wrap.querySelector('#tb');
+  const botones = [];
+  let fijado = 0;
+  // Borde inferior de la cabecera y las pestañas cuando están pegadas arriba.
+  const tope = () => (document.getElementById('cab').offsetHeight || 0) + nav2.offsetHeight;
+
+  function marcar(id) {
+    for (const b of botones) {
+      const on = b.dataset.t === id;
+      b.classList.toggle('on', on);
+      // desplaza solo la fila de pestañas: un scrollIntoView cortaría el desplazamiento de la página
+      if (on) nav2.scrollLeft = b.offsetLeft - 16;
+    }
+  }
 
   for (const t of TABLAS) {
-    const b = el(`<button class="chip">${VFV.escapeHtml(t.titulo)}</button>`);
+    const b = el(`<button type="button" data-t="${t.id}">${VFV.escapeHtml(TABLA_CORTA[t.id] || t.titulo)}</button>`);
     b.addEventListener('click', () => {
       const target = document.getElementById('t-' + t.id);
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (target) {
+        fijado = Date.now() + 1200; // durante el desplazamiento no se recalcula la pestaña
+        window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - tope() + 1, behavior: 'smooth' });
+      }
+      marcar(t.id);
     });
     nav2.appendChild(b);
+    botones.push(b);
 
     tb.appendChild(
-      el(`<div class="card table-card" id="t-${t.id}">
-        <h3 style="margin:0 0 10px;font-size:15px;color:var(--acc)">${VFV.escapeHtml(t.titulo)}</h3>
-        ${t.nota ? `<p class="note-line">${t.nota}</p>` : ''}
+      el(`<div class="table-card" id="t-${t.id}">
+        <h2>${VFV.escapeHtml(t.titulo)}</h2>
+        ${t.nota ? `<p class="sub">${t.nota}</p>` : ''}
         ${t.html}
         ${refsHtml(t.refs)}
       </div>`)
     );
   }
 
+  // Modificadores ▲/▼ en su columna, con color.
+  for (const td of tb.querySelectorAll('td')) {
+    if (td.parentElement.children.length !== 2) continue; // solo tablas de «situación / modificador»
+    const v = (td.textContent || '').trim();
+    if (/^[▲▼]\s*\d+$/.test(v)) td.classList.add('v', v[0] === '▲' ? 'sube' : 'baja');
+    else if (v === '—' && !td.nextElementSibling) td.classList.add('v', 'nada');
+  }
+
+  if (botones.length) botones[0].classList.add('on');
+  // Al desplazarse, se marca la última tabla cuyo título ya ha pasado bajo las pestañas.
+  let pendiente = false;
+  function alDesplazar() {
+    if (!document.body.contains(wrap)) return window.removeEventListener('scroll', alDesplazar);
+    if (pendiente || Date.now() < fijado) return;
+    pendiente = true;
+    requestAnimationFrame(() => {
+      pendiente = false;
+      const limite = tope() + 40;
+      let actual = TABLAS[0] && TABLAS[0].id;
+      for (const c of tb.querySelectorAll('.table-card')) {
+        if (c.getBoundingClientRect().top <= limite) actual = c.id.slice(2);
+      }
+      const alFinal = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      if (alFinal && TABLAS.length) actual = TABLAS[TABLAS.length - 1].id;
+      marcar(actual);
+    });
+  }
+  window.addEventListener('scroll', alDesplazar, { passive: true });
+
   main.appendChild(wrap);
 }
 
 /* ---------- 6. HERRAMIENTAS ---------- */
+const dados = { n: 3, caras: 12, objetivo: 5 };
+
 function viewMesa() {
   const wrap = el(`<section>
-    <h2 class="page-title">Herramientas de mesa</h2>
-    <p class="sub">Dados, eventos aleatorios y control de marcadores. Nada se envía a internet.</p>
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <button class="volver" id="back" type="button">${icon('volver')} Más</button>
+    <h2 class="page-title">Herramientas</h2>
 
-      <div class="card">
-        <h3 style="margin:0 0 12px;font-size:15px">🎲 Tirada de dados</h3>
-        <div class="toolbar-row">
-          <div><label class="lbl">Dado</label>
-            <select class="field" id="dieType">
-              <option value="6">D6</option>
-              <option value="8">D8</option>
-              <option value="12" selected>D12</option>
-            </select></div>
-          <div><label class="lbl">Nº de dados</label>
-            <input class="field" id="dieCount" type="number" min="1" max="20" value="3" /></div>
-          <div><label class="lbl">Éxito con</label>
-            <select class="field" id="dieTarget">
-              <option value="4">4+</option>
-              <option value="5" selected>5+</option>
-              <option value="6">6+</option>
-              <option value="7">7+</option>
-              <option value="8">8+</option>
-              <option value="10">10+</option>
-            </select></div>
+    <div class="herramienta">
+      <h2>Tirar dados</h2>
+      <p class="sub">Éxito con 5 o más, salvo que la regla diga otra cosa.</p>
+      <div class="reserva">
+        <div class="selector">
+          <button type="button" id="menos" aria-label="Un dado menos">−</button>
+          <output id="dieCount" aria-live="polite">${dados.n}</output>
+          <button type="button" id="mas" aria-label="Un dado más">+</button>
         </div>
+        <div class="tipos" id="dieType" role="group" aria-label="Tipo de dado">
+          ${[6, 8, 12].map((c) => `<button type="button" data-c="${c}" class="${c === dados.caras ? 'on' : ''}">d${c}</button>`).join('')}
+        </div>
+        <label class="objetivo">Éxito con
+          <select class="field" id="dieTarget">
+            ${[4, 5, 6, 7, 8, 10].map((v) => `<option value="${v}" ${v === dados.objetivo ? 'selected' : ''}>${v}+</option>`).join('')}
+          </select>
+        </label>
+      </div>
+      <button class="tirar" id="roll" type="button"></button>
+      <div id="diceRes" hidden>
+        <div class="exitos"><strong id="okN">0</strong><span id="okT">éxitos</span></div>
         <div class="dice-out" id="diceOut"></div>
-        <div class="result-line" id="diceRes" style="color:var(--dim)"></div>
-        <button class="btn primary" id="roll" style="margin-top:10px">Tirar</button>
       </div>
+    </div>
 
-      <div class="card">
-        <h3 style="margin:0 0 12px;font-size:15px">🃏 Evento aleatorio (1D12)</h3>
-        <p style="font-size:13px;color:var(--dim);margin:0 0 10px">
-          Se tira cuando hay empate de iniciativa, tras resolverse ambas cartas.</p>
-        <button class="btn primary" id="evt">Tirar 1D12</button>
-        <div id="evtOut" style="margin-top:12px;font-size:13.6px"></div>
-      </div>
+    <div class="herramienta">
+      <h2>Evento aleatorio</h2>
+      <p class="sub">Se tira 1D12 cuando hay empate de iniciativa, tras resolverse ambas cartas.</p>
+      <button class="btn primary" id="evt" type="button">Tirar 1D12</button>
+      <div id="evtOut" class="evento"></div>
+    </div>
 
-      <div class="card" style="grid-column:1/-1">
-        <h3 style="margin:0 0 12px;font-size:15px">🎯 Control de unidades</h3>
-        <p style="font-size:13px;color:var(--dim);margin:0 0 12px">
-          Estrés (3 → sube un nivel de moral y vuelve a 0), marcador de Fuego y acciones usadas.</p>
-        <table class="plain" id="unitTable">
-          <thead><tr><th>Unidad</th><th>Estrés</th><th>Moral</th><th>Fuego</th><th>Acciones</th><th></th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <button class="btn" id="addUnit" style="margin-top:10px">+ Añadir unidad</button>
-      </div>
-
+    <div class="herramienta">
+      <h2>Control de unidades</h2>
+      <p class="sub">Tres de Estrés bajan un nivel de moral. Se guarda en este dispositivo.</p>
+      <div class="unidades" id="units"></div>
+      <p><button class="btn" id="addUnit" type="button">Añadir unidad</button></p>
     </div>
   </section>`);
 
+  wrap.querySelector('#back').addEventListener('click', () => go('mas'));
+
   // dados
   const roll = wrap.querySelector('#roll');
+  const count = wrap.querySelector('#dieCount');
+  function etiqueta() {
+    count.textContent = dados.n;
+    roll.textContent = `Tirar ${dados.n}d${dados.caras}`;
+  }
+  wrap.querySelector('#menos').addEventListener('click', () => { dados.n = Math.max(1, dados.n - 1); etiqueta(); });
+  wrap.querySelector('#mas').addEventListener('click', () => { dados.n = Math.min(20, dados.n + 1); etiqueta(); });
+  for (const b of wrap.querySelectorAll('#dieType button')) {
+    b.addEventListener('click', () => {
+      dados.caras = +b.dataset.c;
+      for (const x of wrap.querySelectorAll('#dieType button')) x.classList.toggle('on', x === b);
+      etiqueta();
+    });
+  }
+  wrap.querySelector('#dieTarget').addEventListener('change', (e) => { dados.objetivo = +e.target.value; });
+  etiqueta();
+
   roll.addEventListener('click', () => {
-    const sides = +wrap.querySelector('#dieType').value;
-    const n = Math.max(1, Math.min(20, +wrap.querySelector('#dieCount').value || 1));
-    const target = +wrap.querySelector('#dieTarget').value;
-    const out = wrap.querySelector('#diceOut');
-    const res = wrap.querySelector('#diceRes');
-    out.innerHTML = '';
-    let succ = 0;
     const values = [];
-    for (let i = 0; i < n; i++) {
-      const v = 1 + Math.floor(Math.random() * sides);
-      values.push(v);
-      if (v >= target) succ++;
-      out.appendChild(el(`<div class="die ${v >= target ? 'ok' : 'fail'}">${v}</div>`));
-    }
-    res.innerHTML = `<span style="color:var(--txt)">${values.join(' · ')}</span><br>
-      <b>${succ}</b> éxito(s) con ${n}d${sides} a ${target}+`;
+    for (let i = 0; i < dados.n; i++) values.push(1 + Math.floor(Math.random() * dados.caras));
+    values.sort((a, b) => b - a);
+    const succ = values.filter((v) => v >= dados.objetivo).length;
+    wrap.querySelector('#diceRes').hidden = false;
+    wrap.querySelector('#okN').textContent = succ;
+    wrap.querySelector('#okT').textContent = `${succ === 1 ? 'éxito' : 'éxitos'} con ${dados.n}d${dados.caras} a ${dados.objetivo}+`;
+    wrap.querySelector('#diceOut').innerHTML = values
+      .map((v, i) => `<span class="die ${v >= dados.objetivo ? 'ok' : ''}" style="animation-delay:${i * 25}ms">${v}</span>`)
+      .join('');
   });
 
   // evento
@@ -623,8 +710,8 @@ function viewMesa() {
     const n = 1 + Math.floor(Math.random() * 12);
     const ev = EVENTOS.find((e) => e.n === n);
     wrap.querySelector('#evtOut').innerHTML = ev
-      ? `<span class="pill">${n}</span> <b>${ev.titulo}</b><br>${ev.texto}`
-      : `<span class="pill">${n}</span> —`;
+      ? `<span class="n">${n}</span><b>${ev.titulo}</b><p>${ev.texto}</p>`
+      : `<span class="n">${n}</span>`;
   });
 
   // unidades
@@ -632,37 +719,40 @@ function viewMesa() {
   let units = JSON.parse(localStorage.getItem(KEY) || '[]');
   if (!units.length) units = [{ n: 'Escuadra 1', stress: 0, morale: 0, fire: 0, acts: 0 }];
   const MORAL = ['Confiado', 'Sacudido', 'Fijado', 'En pánico'];
-  const tbody = wrap.querySelector('#unitTable tbody');
+  const box = wrap.querySelector('#units');
 
   function save() {
     localStorage.setItem(KEY, JSON.stringify(units));
   }
   function draw() {
-    tbody.innerHTML = '';
+    box.innerHTML = '';
     units.forEach((u, i) => {
-      const tr = el(`<tr>
-        <td><input class="field" style="width:130px" value="${VFV.escapeHtml(u.n)}" data-i="${i}" data-k="n" /></td>
-        <td>
-          <button class="btn" style="padding:2px 9px" data-i="${i}" data-k="stress" data-d="-1">−</button>
-          <b style="display:inline-block;min-width:20px;text-align:center">${u.stress}</b>
-          <button class="btn" style="padding:2px 9px" data-i="${i}" data-k="stress" data-d="1">+</button>
-        </td>
-        <td>${MORAL[u.morale] || MORAL[0]}</td>
-        <td><button class="btn" style="padding:2px 9px" data-i="${i}" data-k="fire" data-d="1">${u.fire ? '🔥' : '—'}</button></td>
-        <td>
-          <button class="btn" style="padding:2px 9px" data-i="${i}" data-k="acts" data-d="1">${u.acts}/2</button>
-        </td>
-        <td><button class="btn" style="padding:2px 9px" data-i="${i}" data-k="del">✕</button></td>
-      </tr>`);
-      tbody.appendChild(tr);
+      box.appendChild(el(`<div class="unidad">
+        <div class="fila">
+          <input class="field" value="${VFV.escapeHtml(u.n)}" data-i="${i}" data-k="n" aria-label="Nombre de la unidad" />
+          <button class="btn" type="button" data-i="${i}" data-k="del" aria-label="Quitar ${VFV.escapeHtml(u.n)}">${icon('cerrar')}</button>
+        </div>
+        <div class="fila">
+          <span class="ctl">Estrés
+            <button class="btn" type="button" data-i="${i}" data-k="stress" data-d="-1" aria-label="Menos estrés">−</button>
+            <b>${u.stress}</b>
+            <button class="btn" type="button" data-i="${i}" data-k="stress" data-d="1" aria-label="Más estrés">+</button>
+          </span>
+          <span class="ctl">Moral <span class="moral" data-m="${u.morale}">${MORAL[u.morale] || MORAL[0]}</span></span>
+        </div>
+        <div class="fila">
+          <button class="btn ${u.fire ? 'activo' : ''}" type="button" data-i="${i}" data-k="fire" aria-pressed="${!!u.fire}">Marcador de Fuego</button>
+          <button class="btn" type="button" data-i="${i}" data-k="acts">Acciones ${u.acts}/2</button>
+        </div>
+      </div>`));
     });
-    for (const inp of tbody.querySelectorAll('input[data-k="n"]')) {
+    for (const inp of box.querySelectorAll('input[data-k="n"]')) {
       inp.addEventListener('input', () => {
         units[+inp.dataset.i].n = inp.value;
         save();
       });
     }
-    for (const b of tbody.querySelectorAll('button[data-k]')) {
+    for (const b of box.querySelectorAll('button[data-k]')) {
       b.addEventListener('click', () => {
         const i = +b.dataset.i;
         const k = b.dataset.k;
@@ -676,8 +766,8 @@ function viewMesa() {
           if (u.stress >= 3) {
             u.stress = 0;
             u.morale = Math.min(3, u.morale + 1);
-            toast('¡Moral: ' + MORAL[u.morale] + '!');
-          } else if (u.stress < 0) u.stress = 0;
+            toast('Moral: ' + MORAL[u.morale]);
+          }
           save();
         } else if (k === 'fire') {
           u.fire = u.fire ? 0 : 1;
@@ -700,19 +790,20 @@ function viewMesa() {
   main.appendChild(wrap);
 }
 
-/* ---------- 6. GCE ---------- */
+/* ---------- 7. GCE ---------- */
 function viewGce() {
   const wrap = el(`<section>
-    <h2 class="page-title">Suplemento Guerra Civil Española</h2>
-    <p class="sub">"vforvictory GCE v3", suplemento no oficial de Magnuscapo / Irregulares Plan B (septiembre 2026). Necesita el reglamento básico.</p>
-    <div class="filters" id="bandos">
+    <button class="volver" id="back" type="button">${icon('volver')} Más</button>
+    <h2 class="page-title">Suplemento Guerra Civil</h2>
+    <p class="sub">«vforvictory GCE v3», suplemento no oficial de Magnuscapo / Irregulares Plan B. Necesita el reglamento básico.</p>
+    <div class="filters" id="bandos" role="group" aria-label="Bando">
       <button class="chip on" data-b="">Todos</button>
-      <button class="chip" data-b="franquista">Bando franquista</button>
-      <button class="chip" data-b="republicano">Bando republicano</button>
-      <button class="chip" data-b="compartida">Fuerzas compartidas</button>
+      <button class="chip" data-b="franquista">Franquista</button>
+      <button class="chip" data-b="republicano">Republicano</button>
+      <button class="chip" data-b="compartida">Compartidas</button>
     </div>
     <div class="topic-grid" id="fac"></div>
-    <div id="extra" style="margin-top:26px"></div>
+    <div class="gce-extra" id="extra" style="margin-top:26px"></div>
   </section>`);
 
   const fac = wrap.querySelector('#fac');
@@ -723,12 +814,13 @@ function viewGce() {
     for (const f of GCE.facciones) {
       if (filter && f.bando !== filter) continue;
       const cls = f.bando === 'franquista' ? 'nat' : f.bando === 'republicano' ? 'rep' : '';
-      const card = el(`<div class="topic" data-id="${f.id}">
+      const card = el(`<div class="topic" data-id="${f.id}" role="button" tabindex="0">
         <span class="pill ${cls}">${f.etiqueta}</span>
-        <h3 style="margin-top:8px">${VFV.escapeHtml(f.nombre)}</h3>
+        <h3>${VFV.escapeHtml(f.nombre)}</h3>
         <p>${VFV.escapeHtml(f.resumen)}</p>
       </div>`);
       card.addEventListener('click', () => goGceFaction(f.id));
+      card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goGceFaction(f.id); } });
       fac.appendChild(card);
     }
   }
@@ -743,12 +835,13 @@ function viewGce() {
 
   const extra = wrap.querySelector('#extra');
   for (const s of GCE.secciones || []) {
-    extra.appendChild(el(`<div class="card" style="margin-bottom:14px">
-      <h3 style="margin:0 0 8px;font-size:15px;color:var(--acc)">${VFV.escapeHtml(s.titulo)}</h3>
+    extra.appendChild(el(`<div class="card">
+      <h3>${VFV.escapeHtml(s.titulo)}</h3>
       ${s.html}
     </div>`));
   }
 
+  wrap.querySelector('#back').addEventListener('click', () => go('mas'));
   main.appendChild(wrap);
   draw();
 }
@@ -757,7 +850,7 @@ function goGceFaction(id) {
   const f = GCE.facciones.find((x) => x.id === id);
   if (!f) return;
   const wrap = el(`<section class="article">
-    <button class="btn" id="back" style="margin-bottom:16px">← Suplemento GCE</button>
+    <button class="volver" id="back" type="button">${icon('volver')} Suplemento GCE</button>
     <h2 class="page-title">${VFV.escapeHtml(f.nombre)}</h2>
     <h3>Regla especial de pelotón</h3>
     <p><b>${VFV.escapeHtml(f.peloton.n)}.</b> ${VFV.escapeHtml(f.peloton.t)}</p>
@@ -772,7 +865,7 @@ function goGceFaction(id) {
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
-/* ---------- 7. DOCUMENTOS ---------- */
+/* ---------- 8. DOCUMENTOS ---------- */
 function viewDocs() {
   if (window.VFV_LOCAL) return window.VFV_LOCAL.viewDocuments(main, state.docPage);
   const d = DOCS[state.docPage.doc] || DOCS.crb;
@@ -783,6 +876,7 @@ function viewDocs() {
   const p = d.pages[idx];
 
   const wrap = el(`<section>
+    <button class="volver" id="back" type="button">${icon('volver')} Más</button>
     <h2 class="page-title">Documentos</h2>
     <p class="sub">Texto local de tus documentos. Sirve para localizar la página exacta; el original
     manda y el OCR tiene erratas de reconocimiento.</p>
@@ -798,21 +892,22 @@ function viewDocs() {
       <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline">
         <div>
           <b>${VFV.escapeHtml(d.title)}</b>
-          <div style="font-size:12.5px;color:var(--dim)">${VFV.escapeHtml(d.note || '')}</div>
+          <div style="font-size:14px;color:var(--lapiz)">${VFV.escapeHtml(d.note || '')}</div>
         </div>
-        <a class="btn" href="${pageUrl(d.id, p.page)}" target="_blank" rel="noopener">Abrir en el PDF ↗</a>
+        <a class="btn" href="${pageUrl(d.id, p.page)}" target="_blank" rel="noopener">Abrir en el PDF</a>
       </div>
       <div class="pager">
-        <button class="btn" id="prev" ${idx === 0 ? 'disabled' : ''}>←</button>
-        <span style="font-size:13px;color:var(--dim)">Página</span>
+        <button class="btn" id="prev" aria-label="Página anterior" ${idx === 0 ? 'disabled' : ''}>${icon('volver')}</button>
+        <span style="font-size:14px;color:var(--lapiz)">Página</span>
         <input class="field" id="pg" type="number" min="${d.pages[0].page}" max="${d.pages[total - 1].page}" value="${p.page}" style="width:80px" />
-        <span style="font-size:13px;color:var(--dim)">del PDF (${idx + 1} de ${total})</span>
-        <button class="btn" id="next" ${idx === total - 1 ? 'disabled' : ''}>→</button>
+        <span style="font-size:14px;color:var(--lapiz)">del PDF (${idx + 1} de ${total})</span>
+        <button class="btn" id="next" aria-label="Página siguiente" ${idx === total - 1 ? 'disabled' : ''}>${icon('flecha')}</button>
       </div>
-      <div class="viewer" id="viewer">${VFV.escapeHtml(p.text)}</div>
+      <div class="viewer" id="viewer" style="margin-top:12px">${VFV.escapeHtml(p.text)}</div>
     </div>
   </section>`);
 
+  wrap.querySelector('#back').addEventListener('click', () => go('mas'));
   wrap.querySelector('#prev').addEventListener('click', () =>
     go('docs', { docPage: { doc: d.id, idx: idx - 1 } })
   );
@@ -834,8 +929,56 @@ function viewDocs() {
   main.appendChild(wrap);
 }
 
+/* ---------- 9. MÁS ---------- */
+function viewMas() {
+  const local = !!window.VFV_LOCAL;
+  const items = [
+    ['mesa', 'dado', 'Herramientas', 'Dados, eventos aleatorios y control de unidades'],
+    ['secuencia', 'turno', 'Turno paso a paso', 'Lista de comprobación de cada fase'],
+    ['gce', 'bandera', 'Suplemento GCE', `${GCE.facciones.length} facciones de la Guerra Civil Española`],
+    ['docs', 'libro', local ? 'Mis libros' : 'Documentos', local ? 'Tus PDF y su texto, guardados en este dispositivo' : 'Texto OCR de los tres PDF, página a página'],
+  ];
+  const wrap = el(`<section>
+    <h2 class="page-title">Más</h2>
+    <ul class="lista con-icono" style="margin-top:14px">
+      ${items.map(([v, ic, t, r]) => `<li><button type="button" data-view="${v}">
+        ${icon(ic, 'icono')}<b>${t}</b><span class="res">${r}</span>${icon('flecha', 'flecha')}
+      </button></li>`).join('')}
+    </ul>
+    <p class="ayuda-busqueda">En el ordenador, pulsa <span class="kbd">/</span> para buscar.</p>
+  </section>`);
+  for (const b of wrap.querySelectorAll('button[data-view]')) {
+    b.addEventListener('click', () => go(b.dataset.view, { topicId: null }));
+  }
+  main.appendChild(wrap);
+}
+
 /* ---------------- tabla de eventos ---------------- */
 const EVENTOS = (window.VFV_EVENTOS || []).slice();
+
+/* ---------------- modo día / noche ---------------- */
+function syncThemeColor() {
+  const meta = document.getElementById('theme-color');
+  if (meta && window.getComputedStyle) meta.setAttribute('content', getComputedStyle(document.body).backgroundColor);
+}
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme
+    ? root.dataset.theme === 'dark'
+    : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('vfv.theme', root.dataset.theme); } catch (e) { /* sin almacenamiento */ }
+  syncThemeColor();
+});
+
+// Altura de la cabecera, para que las pestañas de Tablas se peguen justo debajo.
+function medirCabecera() {
+  const cab = document.getElementById('cab');
+  if (cab && cab.offsetHeight && document.documentElement) {
+    document.documentElement.style.setProperty('--cab-h', cab.offsetHeight + 'px');
+  }
+}
+window.addEventListener('resize', medirCabecera);
 
 /* ---------------- eventos globales ---------------- */
 nav.addEventListener('click', (e) => {
@@ -859,7 +1002,7 @@ document.addEventListener('keydown', (e) => {
 
 // arranque
 const initial = location.hash.replace('#', '').split('?')[0] || 'buscar';
-state.view = ['buscar', 'temas', 'faq', 'secuencia', 'tablas', 'mesa', 'gce', 'docs'].includes(initial)
-  ? initial
-  : 'buscar';
+state.view = VISTAS.includes(initial) ? initial : 'buscar';
 render();
+medirCabecera();
+syncThemeColor();

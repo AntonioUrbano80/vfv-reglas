@@ -2,60 +2,81 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>V for Victory — Consulta rápida de reglamento</title>
 <meta name="description" content="Consulta de reglamento para V for Victory: dudas de mesa, tablas de disparo, detección, moral, vehículos y suplementos. Funciona sin conexión." />
-<meta name="theme-color" content="#14161a" />
+<link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin />
+<meta name="theme-color" id="theme-color" content="#e4e7de" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="VFV Reglas" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
 <link rel="icon" type="image/png" href="icons/icon-192.png" />
 <link rel="stylesheet" href="styles.css" />
+<script src="theme.js"></script>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-buscar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></symbol>
+    <symbol id="i-temas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5.5c2.8-1.3 5.5-1.3 8 .5v13c-2.5-1.8-5.2-1.8-8-.5zM20 5.5c-2.8-1.3-5.5-1.3-8 .5v13c2.5-1.8 5.2-1.8 8-.5z"/></symbol>
+    <symbol id="i-preguntas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M10 9.2a2 2 0 1 1 2.6 1.9c-.5.2-.6.5-.6 1"/><path d="M12 14.2v.1"/></symbol>
+    <symbol id="i-tablas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M15 9.5v10"/></symbol>
+    <symbol id="i-mas" viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></symbol>
+    <symbol id="i-dado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><g fill="currentColor" stroke="none"><circle cx="8.5" cy="8.5" r="1.4"/><circle cx="15.5" cy="15.5" r="1.4"/><circle cx="12" cy="12" r="1.4"/></g></symbol>
+    <symbol id="i-turno" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6.5h3M5 12h3M5 17.5h3"/><path d="M11 6.5l1.5 1.5 3-3M11 12h8M11 17.5h8"/></symbol>
+    <symbol id="i-libro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M14.5 3.5V7.5h4"/></symbol>
+    <symbol id="i-bandera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5.5 21V4M5.5 4.5h12l-2.5 4 2.5 4h-12"/></symbol>
+    <symbol id="i-flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-volver" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-cerrar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
+    <symbol id="i-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  </defs>
+</svg>
+
 <div class="app">
-  <aside class="side">
-    <div class="brand">
-      <div class="v">V</div>
-      <div>
-        <h1>V for Victory</h1>
-        <small>Mesa de consulta</small>
-      </div>
+  <header class="cab" id="cab">
+    <a class="marca" href="#buscar" aria-label="V for Victory, ir a Buscar">
+      <b>V for Victory</b>
+      <span class="morse" aria-hidden="true"><i></i><i></i><i></i><i class="raya"></i></span>
+    </a>
+    <div class="estado">
+      <p id="offline-status" role="status">Preparando…</p>
+      <button class="btn primary" id="update-app" type="button" hidden>Actualizar</button>
+      <button class="tema" id="theme-toggle" type="button" aria-label="Cambiar entre modo día y noche">
+        <svg class="si-claro"><use href="#i-luna"/></svg><svg class="si-oscuro"><use href="#i-sol"/></svg>
+      </button>
     </div>
+  </header>
 
-    <nav class="nav" id="nav">
-      <button data-view="buscar" class="on"><span class="ico">🔍</span> Buscar</button>
-      <button data-view="temas"><span class="ico">📖</span> Temas</button>
-      <button data-view="faq"><span class="ico">❓</span> Preguntas</button>
-      <button data-view="secuencia"><span class="ico">🕐</span> Turno paso a paso</button>
-      <button data-view="tablas"><span class="ico">📊</span> Tablas</button>
-      <button data-view="mesa"><span class="ico">🎲</span> Herramientas</button>
-      <button data-view="gce"><span class="ico">🇪🇸</span> Suplemento GCE</button>
-      <button data-view="docs"><span class="ico">📄</span> Mis libros</button>
-    </nav>
+  <nav class="barra" id="nav" aria-label="Secciones">
+    <button data-view="buscar" class="on" aria-current="page"><span class="morse" aria-hidden="true"><i></i><i></i><i></i><i class="raya"></i></span><svg aria-hidden="true"><use href="#i-buscar"/></svg><span>Buscar</span></button>
+    <button data-view="temas"><span class="morse" aria-hidden="true"><i></i><i></i><i></i><i class="raya"></i></span><svg aria-hidden="true"><use href="#i-temas"/></svg><span>Temas</span></button>
+    <button data-view="faq"><span class="morse" aria-hidden="true"><i></i><i></i><i></i><i class="raya"></i></span><svg aria-hidden="true"><use href="#i-preguntas"/></svg><span>Preguntas</span></button>
+    <button data-view="tablas"><span class="morse" aria-hidden="true"><i></i><i></i><i></i><i class="raya"></i></span><svg aria-hidden="true"><use href="#i-tablas"/></svg><span>Tablas</span></button>
+    <button data-view="mas"><span class="morse" aria-hidden="true"><i></i><i></i><i></i><i class="raya"></i></span><svg aria-hidden="true"><use href="#i-mas"/></svg><span>Más</span></button>
+  </nav>
 
-    <div class="install-controls">
-  <button class="btn" id="install-app">Cómo instalar</button>
-  <button class="btn" id="update-app" hidden>Actualizar aplicación</button>
-  <p id="offline-status" role="status">Preparando modo sin conexión…</p>
-</div><div class="sep"></div>
-    <div class="hint">
-      Atajo: pulsa <span class="kbd">/</span> para buscar.<br />
-      Consulta y libros locales sin conexión.
-    </div>
-  </aside>
-
-  <div class="content-area"><section class="card" id="install-help" hidden>
-<button class="btn" id="close-install-help">Cerrar</button><h2>Instalar en el móvil</h2>
+  <div class="content-area">
+    <section class="card" id="install-help" hidden>
+<button class="btn" id="close-install-help" type="button">Cerrar</button><h2>Instalar en el móvil</h2>
 <p><b>iPhone/iPad:</b> abre esta web en Safari, pulsa Compartir y Añadir a pantalla de inicio.</p>
 <p><b>Android:</b> abre en Chrome y usa Instalar aplicación o Añadir a pantalla de inicio en el menú.</p>
 <p>Abre la aplicación instalada antes de importar tus libros. Espera a que aparezca «Disponible sin conexión» y comprueba una vez el modo avión. Tus libros son locales y no se sincronizan.</p>
-</section><main class="main" id="main"></main></div>
+</section>
+    <main class="main" id="main"></main>
+    <section class="install-controls">
+      <h3>Instalar en el móvil</h3>
+      <p>Añádela a la pantalla de inicio para usarla sin conexión durante la partida.</p>
+      <button class="btn" id="install-app" type="button">Cómo instalar</button>
+    </section>
+  </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status"></div>
 
 <script src="data/rules.js"></script>
 <script src="data/topics.js"></script>

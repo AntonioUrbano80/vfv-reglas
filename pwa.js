@@ -6,7 +6,8 @@
   let installPrompt;
   let ready = false;
   function networkStatus() {
-    status.textContent = !navigator.onLine ? 'Sin conexión' : ready ? 'Disponible sin conexión' : 'Preparando modo sin conexión…';
+    status.textContent = !navigator.onLine ? 'Sin conexión' : ready ? 'Disponible sin conexión' : 'Preparando…';
+    status.dataset.ok = ready ? '1' : '';
   }
   window.addEventListener('online', networkStatus);
   window.addEventListener('offline', networkStatus);
@@ -27,8 +28,9 @@
     }
   };
   document.getElementById('close-install-help').onclick = () => { document.getElementById('install-help').hidden = true; };
-  window.addEventListener('appinstalled', () => { install.hidden = true; });
-  if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) install.hidden = true;
+  const installBox = install.closest('.install-controls') || install;
+  window.addEventListener('appinstalled', () => { installBox.hidden = true; });
+  if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) installBox.hidden = true;
 
   window.addEventListener('vfv-books-changed', () => {
     INDEX = VFV.buildIndex(RULES.documents);
@@ -70,9 +72,13 @@
         refreshing = true;
         location.reload();
       });
-    }).catch(() => { status.textContent = 'No se ha preparado el modo sin conexión. Vuelve a abrir con internet.'; });
+    }).catch(() => {
+      status.textContent = 'Sin modo offline';
+      status.title = 'No se ha preparado el modo sin conexión. Vuelve a abrir la app con internet.';
+    });
   } else {
-    status.textContent = 'Instalación y modo sin conexión requieren HTTPS o localhost.';
+    status.textContent = 'Requiere HTTPS';
+    status.title = 'La instalación y el modo sin conexión requieren HTTPS o localhost.';
   }
   networkStatus();
 })();
