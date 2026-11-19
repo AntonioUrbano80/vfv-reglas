@@ -422,6 +422,53 @@ window.VFV_FAQ = [
       Además todos los participantes quedan <b>desactivados</b> (han gastado sus dos acciones del turno).</p>`,
     refs: [{ doc: 'crb', page: 37 }],
   },
+  {
+    id: 'asaltar-vehiculo',
+    cat: 'Asalto',
+    q: '¿Cómo se asalta un vehículo?',
+    plain: 'el lider llega a contacto con un advance de S o un run de 2S y puede recibir fuego reactivo; luego las figuras se ponen a S, cada una tira 1d8 si tiene anti-tank assault o 1d6 si no, y con tres impactos se tira el dado de penetracion',
+    html: `<p>No es un cuerpo a cuerpo: el vehículo no devuelve golpes.</p>
+      <ol>
+        <li>El <b>líder llega a contacto</b> con un advance de S o un run de 2S. Puede provocar fuego reactivo;
+            si se echa cuerpo a tierra o queda pinned/panicked, el asalto se detiene.</li>
+        <li>El resto de figuras se coloca a <b>S</b> del líder y en contacto con el vehículo.</li>
+        <li>Reserva de dados: <b>1d8</b> por figura con <b>Anti-Tank Assault</b>, <b>1d6</b> el resto.</li>
+        <li>Con <b>3 impactos</b> se tira el dado de penetración, con boosts y burns por los impactos de más o de menos.</li>
+      </ol>
+      <p>Al final el equipo se retira S, recibe 1 de Estrés, marcador de Fuego y queda desactivado.</p>`,
+    refs: [{ doc: 'crb', page: 38 }],
+  },
+  {
+    id: 'blindaje-asaltado',
+    cat: 'Asalto',
+    q: '¿Qué blindaje tiene un vehículo asaltado por infantería?',
+    plain: 'baja uno, con minimo uno, porque la infanteria ataca por arriba; un open topped cuenta como blindaje cero',
+    html: `<p>La infantería ataca <b>por arriba</b>, así que el blindaje <b>baja 1</b> (mínimo 1). Un vehículo
+      <b>open-topped</b> cuenta como <b>blindaje 0</b> frente a un asalto de infantería, sea cual sea su
+      blindaje normal.</p>
+      <p>El factor AT es <b>F</b> para casi todos los equipos y <b>E</b> para los que tienen
+      Anti-Tank Assault.</p>`,
+    refs: [{ doc: 'crb', page: 38 }, { doc: 'crb', page: 34 }],
+  },
+  {
+    id: 'varios-asaltan-vehiculo',
+    cat: 'Asalto',
+    q: '¿Pueden varios equipos asaltar el mismo vehículo?',
+    plain: 'si, a la vez; cada uno puede recibir fuego reactivo de una unidad distinta y basta con que uno llegue a contacto para que el asalto se resuelva',
+    html: `<p>Sí, <b>a la vez</b>. Cada equipo que asalta puede recibir fuego reactivo de <b>una unidad
+      distinta</b>, y <b>basta con que uno de ellos llegue a contacto</b> con el vehículo para que el asalto
+      se resuelva. Los dados de todas las unidades participantes <b>se suman</b> en una sola reserva.</p>`,
+    refs: [{ doc: 'crb', page: 38 }],
+  },
+  {
+    id: 'vehiculo-tras-asalto',
+    cat: 'Asalto',
+    q: '¿Queda desactivado el vehículo que recibe un asalto?',
+    plain: 'no, el vehiculo defensor no queda desactivado, aunque si puede haber disparado en reactivo gastando una accion',
+    html: `<p><b>No.</b> El vehículo defensor <b>no queda desactivado</b> por el asalto, a diferencia de la
+      infantería, que acaba desactivada. Eso sí: si reaccionó disparando, <b>gastó una de sus acciones</b>.</p>`,
+    refs: [{ doc: 'crb', page: 38 }],
+  },
 
   /* ============ REACTIVO ============ */
   {
@@ -971,5 +1018,253 @@ window.VFV_FAQ = [
     html: `<p>Después de montar la mesa, y <b>en secreto</b>, antes de desplegar. Solo se pueden comprar
       opciones del OOB que el escenario no prohíba, y en las categorías que permita su apartado <b>Support</b>.</p>`,
     refs: [{ doc: 'crb', page: 68 }, { doc: 'crb', page: 70 }],
+  },
+
+  /* ============ ARTILLERÍA ============ */
+  {
+    id: 'artilleria-mortero-despliegue',
+    cat: 'Artillería',
+    q: '¿Cómo se despliega un mortero?',
+    plain: 'solo desde azotea plana, requiere accion unlimber antes de disparar y para reorientar, dispara fuego indirecto con observador',
+    html: `<p>El mortero es un arma de fuego indirecto con reglas específicas:</p>
+      <ul>
+        <li>Solo puede disparar desde una <b>azotea plana</b> de un edificio.</li>
+        <li>Requiere acción <b>Unlimber</b> (orden Tactical) antes de disparar y cada vez que se reorienta.</li>
+        <li>Dispara <b>fuego indirecto</b>: no necesita línea de visión al objetivo, basta con que un <b>observador</b> (cualquier unidad amiga detectada) lo tenga.</li>
+        <li>Potencia HE: ligero <b>HE (S)</b>, medio <b>HE (S)</b> (errata 2025: era M).</li>
+      </ul>`,
+    refs: [{ doc: 'crb', page: 46 }, { doc: 'e43', page: 54 }],
+  },
+  {
+    id: 'artilleria-fuego-indirecto',
+    cat: 'Artillería',
+    q: '¿Cómo funciona el fuego indirecto?',
+    plain: 'observador detecta objetivo con linea de vision, se anuncia arma, se monta pool, se tira 1d6 para desvio (artilleria fuera de mesa) o resuelve directo (mortero), impactos = exitos, se aplica HE',
+    html: `<p>El fuego indirecto (morteros en mesa y obuses fuera de mesa) se resuelve así:</p>
+      <ol>
+        <li>Un <b>observador</b> (unidad amiga detectada con línea de visión al objetivo) "llama" el fuego.</li>
+        <li>Se anuncia el arma y se monta su <b>pool de dados</b> (potencia del arma).</li>
+        <li><b>Mortero en mesa:</b> resuelve directo contra el objetivo (el observador da la corrección).<br>
+            <b>Artillería fuera de mesa (obuses):</b> tira <b>1d6</b> (errata 2025): éxito (5+) = impacto en objetivo; fallo = <b>desvío</b> → afecta a <b>mitad del pool</b> (redondeando arriba).</li>
+        <li>Los <b>impactos = éxitos</b>. Se aplica regla <b>HE</b> (ignora cobertura ligera/pesada en edificios/bosque denso/jungla → tirador gana ▲2).</li>
+        <li>Salvaciones normales: cobertura pesada = d12, fortificaciones = d12 repetible.</li>
+      </ol>`,
+    refs: [{ doc: 'crb', page: 46 }, { doc: 'e43', page: 57 }],
+  },
+  {
+    id: 'artilleria-desvio',
+    cat: 'Artillería',
+    q: '¿Qué pasa si falla la tirada de fuego indirecto?',
+    plain: 'fallo en el 1d6 de desvio: el impacto afecta a la mitad del pool de dados redondeando arriba; las tropas a X del blanco reciben mitad de los dados',
+    html: `<p>Según la errata 2025 (e43 p.57), si la tirada de 1d6 para fuego indirecto <b>falla</b>:</p>
+      <ul>
+        <li>El impacto se desvía y solo afecta a <b>mitad del pool de dados</b> (redondeando hacia arriba).</li>
+        <li>Las tropas situadas a <b>X del blanco</b> (distancia que indica el perfil del arma) son atacadas con <b>mitad de los dados</b>.</li>
+      </ul>
+      <p>Si la tirada tiene <b>éxito (5+)</b>, el impacto cae en el objetivo declarado con el pool completo.</p>`,
+    refs: [{ doc: 'e43', page: 57 }],
+  },
+  {
+    id: 'artilleria-bateria',
+    cat: 'Artillería',
+    q: '¿Varios morteros u obuses disparan juntos?',
+    plain: 'si, forman una bateria: se suman los pools y se resuelve una sola tirada de desvio',
+    html: `<p>Sí. Varios tubos (morteros u obuses) disparando al mismo objetivo forman una <b>batería</b>:</p>
+      <ul>
+        <li>Se <b>suman los pools de dados</b> de todas las piezas.</li>
+        <li>Se resuelve <b>una sola tirada de desvío</b> (1d6 para artillería fuera de mesa).</li>
+        <li>Los éxitos totales generan impactos con el pool combinado.</li>
+      </ul>
+      <p>Esto representa fuego concentrado coordinado.</p>`,
+    refs: [{ doc: 'crb', page: 46 }, { doc: 'e43', page: 57 }],
+  },
+
+  /* ============ LANZALLAMAS ============ */
+  {
+    id: 'lanzallamas-reactivo',
+    cat: 'Lanzallamas',
+    q: '¿Puede un lanzallamas disparar en reactivo?',
+    plain: 'no, la errata 2025 prohibe usar lanzallamas en fuego reactivo',
+    html: `<p><b>No.</b> La errata 2025 (e43 p.54) establece explícitamente que el <b>lanzallamas no puede usarse en fuego reactivo</b>.</p>
+      <p>Solo puede disparar como acción <b>Fire</b> (orden Engage) durante la activación del jugador activo.</p>`,
+    refs: [{ doc: 'e43', page: 54 }],
+  },
+  {
+    id: 'lanzallamas-edificio',
+    cat: 'Lanzallamas',
+    q: '¿Cómo afecta el lanzallamas a unidades en edificios?',
+    plain: 'ignora la cobertura la explosion llena el espacio causa panico chequeo moral inmediato con dos burns',
+    html: `<p>El lanzallamas es devastador contra edificios:</p>
+      <ul>
+        <li><b>Ignora la cobertura</b>: la explosión llena el espacio interior.</li>
+        <li>Causa <b>pánico</b>: la unidad objetivo hace <b>chequeo de moral inmediato con ▼2</b>.</li>
+        <li>Al ser <b>HE (S)</b>, el tirador gana <b>▲2</b> contra edificios, bosque denso y jungla.</li>
+      </ul>`,
+    refs: [{ doc: 'crb', page: 30 }, { doc: 'e43', page: 57 }],
+  },
+  {
+    id: 'lanzallamas-bunker',
+    cat: 'Lanzallamas',
+    q: '¿Sirve el lanzallamas contra un búnker?',
+    plain: 'si, ignora la cobertura del bunker y causa panico con chequeo moral a menos dos; el bunker no se puede tomar solo con lanzallamas hace falta asalto antitanque para la puerta',
+    html: `<p>Sí, el lanzallamas afecta a los ocupantes de un búnker:</p>
+      <ul>
+        <li><b>Ignora la cobertura</b> del búnker (explosión interna).</li>
+        <li>Causa <b>pánico</b> → chequeo de moral inmediato con <b>▼2</b>.</li>
+        <li>Pero <b>no destruye el búnker</b> ni abre la puerta: para tomar un búnker hace falta <b>asalto antitanque</b> (regla Anti-Tank Assault) contra la puerta.</li>
+      </ul>`,
+    refs: [{ doc: 'crb', page: 62 }, { doc: 'e43', page: 57 }],
+  },
+
+  /* ============ FRANCOTIRADOR ============ */
+  {
+    id: 'francotirador-despliegue',
+    cat: 'Francotiradores',
+    q: '¿Cómo se despliega un francotirador?',
+    plain: 'despliegue oculto se coloca boca abajo o se anota su posicion no cuenta para deteccion hasta que dispara o se le ve',
+    html: `<p>El francotirador usa <b>despliegue oculto</b>:</p>
+      <ul>
+        <li>Se coloca en mesa <b>boca abajo</b> o se anota su posición en secreto.</li>
+        <li>No cuenta para detección (spotting) hasta que <b>dispara</b> o una unidad enemiga consigue <b>línea de visión directa</b> a su posición.</li>
+        <li>Al revelarse, se trata como un equipo normal de una figura.</li>
+      </ul>`,
+    refs: [{ doc: 'crb', page: 30 }, { doc: 'e43', page: 54 }],
+  },
+  {
+    id: 'francotirador-detectar',
+    cat: 'Francotiradores',
+    q: '¿Se detecta al francotirador igual que una unidad normal?',
+    plain: 'no, esta oculto hasta que dispara o se le ve directamente; no cuenta para deteccion mientras esta oculto',
+    html: `<p><b>No.</b> Mientras está oculto:</p>
+      <ul>
+        <li>No se le aplica la tabla de detección (spotting).</li>
+        <li>No se puede detectar a distancia; solo se "ve" si una unidad tiene <b>línea de visión directa</b> a su posición real.</li>
+        <li>Al <b>disparar</b>, se revela automáticamente (y el rival tira 1d6 para Fire marker, errata 2025).</li>
+      </ul>`,
+    refs: [{ doc: 'crb', page: 30 }, { doc: 'e43', page: 54 }],
+  },
+  {
+    id: 'francotirador-fire',
+    cat: 'Francotiradores',
+    q: '¿Qué pasa tras disparar un francotirador?',
+    plain: 'el rival tira 1d6 y con exito pone marcador de fuego en el francotirador errata 2025',
+    html: `<p>Tras disparar, el rival tira <b>1d6</b> (errata 2025, e43 p.54):</p>
+      <ul>
+        <li><b>Éxito (5+):</b> coloca un <b>marcador de Fuego</b> en el francotirador (será más fácil de detectar).</li>
+        <li><b>Fallo:</b> el francotirador sigue sin marcador de Fuego.</li>
+      </ul>
+      <p>Esto representa el destello y humo del disparo delatando su posición.</p>`,
+    refs: [{ doc: 'e43', page: 54 }],
+  },
+
+  /* ============ RESERVAS ============ */
+  {
+    id: 'reservas-llegada',
+    cat: 'Reservas',
+    q: '¿Cómo entran las reservas en mesa?',
+    plain: 'al inicio de una fase de activacion tiras el dado que indica el escenario ej d8 5+ y con exito entran por el borde designado con un advance',
+    html: `<p>La regla general para reservas:</p>
+      <ol>
+        <li>Al inicio de una <b>fase de activación</b> (antes de revelar cartas), tira el dado que indique el escenario (habitualmente <b>d8</b>, éxito <b>5+</b>).</li>
+        <li>Con éxito, la unidad entra por el <b>borde de mesa designado</b> en el escenario.</li>
+        <li>Entra con un <b>advance</b> desde el borde; su líder debe poder colocarse a <b>S</b> del borde.</li>
+      </ol>
+      <p>Variantes: escalonadas (oleadas), desde fuera de mesa (vehículos), turno fijo + dado, o automáticas según escenario.</p>`,
+    refs: [{ doc: 'crb', page: 115 }, { doc: 'crb', page: 116 }, { doc: 'crb', page: 120 }],
+  },
+  {
+    id: 'reservas-activacion',
+    cat: 'Reservas',
+    q: '¿Pueden activar las reservas el turno que llegan?',
+    plain: 'si, la unidad que entra forma parte de la fuerza y puede ser objetivo de cartas normalmente ese mismo turno',
+    html: `<p><b>Sí.</b> La unidad que entra en mesa <b>forma parte de la fuerza inmediatamente</b> y puede ser objetivo de cartas de activación en ese mismo turno. No hay penalización ni espera.</p>`,
+    refs: [{ doc: 'crb', page: 115 }],
+  },
+  {
+    id: 'reservas-borde',
+    cat: 'Reservas',
+    q: '¿Por qué borde entran las reservas?',
+    plain: 'el borde lo indica el escenario o se acuerda entre los jugadores al montar la mesa',
+    html: `<p>El borde de entrada <b>lo indica el escenario</b> (ej. "borde sur" en Escape, "borde lateral" en The Crossroads). Si no lo especifica, <b>se acuerda entre los jugadores</b> al montar la mesa, típicamente el borde de despliegue de la fuerza a la que pertenecen.</p>`,
+    refs: [{ doc: 'crb', page: 115 }],
+  },
+
+  /* ============ BONUS CARDS ============ */
+  {
+    id: 'bonus-cards-efectos',
+    cat: 'Reglas generales',
+    q: '¿Qué efectos tienen las 10 Bonus Cards?',
+    plain: '1 +2d6 disparo 2 +1d12 disparo 3 añade tactical o +1 4 sustituye tirada por d6 5 anula baja 6 añade engage o +1 7 añade move o +1 8 +1 columna spotting 9 +2d6 defensa 10 +1d12 defensa',
+    html: `<p>El mazo de bonificación tiene <b>20 cartas = 2 copias de cada una de 10 efectos</b>:</p>
+      <table>
+        <tr><th>#</th><th>Efecto</th><th>Cuándo se juega</th></tr>
+        <tr><td>1</td><td><b>+2d6</b> al pool de disparo (no AT)</td><td>Tras montar reserva, aplicar boosts/burns</td></tr>
+        <tr><td>2</td><td><b>+1d12</b> al pool de disparo (no AT)</td><td>Ídem</td></tr>
+        <tr><td>3</td><td>Añade orden <b>Tactical</b> a carta en juego; si ya tiene, <b>+1</b> a su valor</td><td>Al resolver tu carta</td></tr>
+        <tr><td>4</td><td><b>Sustituye cualquier tirada por 1d6</b></td><td>Después de cualquier tirada</td></tr>
+        <tr><td>5</td><td>Tira el dado indicado: <b>éxito = anula 1 baja</b></td><td>Cuando un equipo sufre una baja</td></tr>
+        <tr><td>6</td><td>Añade orden <b>Engage</b> a carta en juego; si ya tiene, <b>+1</b></td><td>Al resolver tu carta</td></tr>
+        <tr><td>7</td><td>Añade orden <b>Move</b> a carta en juego; si ya tiene, <b>+1</b></td><td>Al resolver tu carta</td></tr>
+        <tr><td>8</td><td><b>+1 columna</b> a spotting hasta resolver carta</td><td>Durante intento de detección</td></tr>
+        <tr><td>9</td><td><b>+2d6</b> al pool de defensa</td><td>Antes de tirar reserva de defensa</td></tr>
+        <tr><td>10</td><td><b>+1d12</b> al pool de defensa</td><td>Antes de tirar reserva de defensa</td></tr>
+      </table>
+      <p><b>Regla:</b> Nunca dos cartas con la misma ilustración sobre la misma acción. Si el mazo se agota, se rebarajan los descartes.</p>`,
+    refs: [{ doc: 'crb', page: 17 }, { doc: 'crb', page: 18 }],
+  },
+
+  /* ============ ESCENARIOS ESPECÍFICOS ============ */
+  {
+    id: 'escenario-4-bombardeo',
+    cat: 'Ejército y escenarios',
+    q: '¿Cómo funciona el bombardeo preparatorio de The Outskirts?',
+    plain: 'tras desplegar d6 por cada unidad enemiga a mas de L+M de tus unidades cada exito resuelve fuego de howitzer pesado con 2d12 sin HE',
+    html: `<p>Escenario 4 "The Outskirts": tras el despliegue, el atacante tira <b>1d6 por cada unidad enemiga desplegada a más de L+M</b> de toda unidad propia.</p>
+      <ul>
+        <li>Por cada <b>éxito (5+)</b>, resuelve un fuego de <b>obús pesado (howitzer) con 2d12</b>.</li>
+        <li>Este fuego <b>no tiene efecto HE</b> (no ignora cobertura, no da ▲2).</li>
+        <li>El defensor está <b>atrincherado (Entrenched)</b> en sus 3 edificios: cobertura pesada + ▼2 columnas a detección (incluso contra HE/bombardeo), se pierde al primer movimiento.</li>
+      </ul>`,
+    refs: [{ doc: 'crb', page: 114 }, { doc: 'crb', page: 64 }],
+  },
+  {
+    id: 'escenario-6-restos-llamas',
+    cat: 'Ejército y escenarios',
+    q: '¿Qué son los "restos en llamas" del escenario 6?',
+    plain: 'bloquean linea de vision echan humo d12 de viento las unidades dentro sufren efectos',
+    html: `<p>Escenario 6 "The Road to Hell": el camino tiene <b>restos en llamas</b>:</p>
+      <ul>
+        <li><b>Bloquean línea de visión</b> (como obstáculo alto).</li>
+        <li><b>Echan humo</b>: cada turno se tira <b>1d12</b> para ver dirección/extensión del humo (véase regla de humo si existe, si no, trátalo como área que bloquea LoS y da cobertura pesada).</li>
+        <li>Las unidades que entren o terminen en los restos pueden sufrir daño (según reglas del escenario).</li>
+      </ul>`,
+    refs: [{ doc: 'crb', page: 116 }],
+  },
+  {
+    id: 'escenario-10-refuerzos',
+    cat: 'Ejército y escenarios',
+    q: '¿Cómo funcionan los refuerzos del escenario 10 (We Must Hold)?',
+    plain: 'a partir del turno 3 el defensor tira d8 por cada refuerzo con 5+ entra por el borde designado',
+    html: `<p>Escenario 10 "We Must Hold": el defensor recibe <b>refuerzos a partir del turno 3</b>.</p>
+      <ul>
+        <li>Al inicio de cada turno (desde el 3), tira <b>1d8 por cada refuerzo</b> pendiente.</li>
+        <li>Con <b>5+</b>, ese refuerzo entra por el <b>borde designado</b> (normalmente el borde de despliegue del defensor).</li>
+        <li>Entran con un advance y pueden activar ese turno.</li>
+      </ul>`,
+    refs: [{ doc: 'crb', page: 120 }],
+  },
+  {
+    id: 'escenario-xl-compartido',
+    cat: 'Ejército y escenarios',
+    q: '¿Qué significa "apoyo compartido" en Grand Manoeuvres?',
+    plain: 'los vehiculos comprados con estrellas son controlables por los dos jugadores del mismo equipo',
+    html: `<p>En el escenario XL "Grand Manoeuvres" (4 jugadores, 2 equipos de 2):</p>
+      <ul>
+        <li>El apoyo (◇) se reparte entre los dos jugadores de cada equipo.</li>
+        <li>Los <b>vehículos comprados con ◇</b> son <b>controlables por ambos</b> jugadores del equipo.</li>
+        <li>Máx. 6 vehículos por fuerza y máx. 6 ◇ por jugador en Fire Support.</li>
+        <li>Cada jugador tiene su propia baraja de 7 cartas y carta de Habilidad Especial.</li>
+      </ul>`,
+    refs: [{ doc: 'crb', page: 121 }, { doc: 'crb', page: 122 }],
   },
 ];

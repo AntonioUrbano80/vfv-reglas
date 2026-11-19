@@ -529,3 +529,34 @@ body[data-view="mas"] .main { padding-bottom: 24px; }
 
 table.plain { border-collapse: collapse; width: 100%; font-size: 15px; }
 table.plain th, table.plain td { border-bottom: 1px solid var(--filete); padding: 8px 8px 8px 0; text-align: left; }
+
+/* ---------- pool de dados (herramienta) ---------- */
+.pool-editor { margin-bottom: 18px; }
+.pool-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; color: var(--lapiz); }
+.pool-total { font-weight: 700; color: var(--tinta); }
+.pool-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.pool-item { display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: var(--papel-2); border-radius: 6px; font-size: 14px; font-weight: 600; }
+.pool-item .die-type { font-variant-numeric: tabular-nums; }
+.pool-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.pool-add .field { min-width: 100px; }
+.pool-add .small { width: 70px; }
+.pool-mods { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; background: var(--papel-2); border-radius: 6px; margin-bottom: 10px; }
+.pool-mods label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.pool-mods .small { width: 70px; }
+.pool-mods .note-line { margin: 0; padding: 0; background: none; font-size: 12px; color: var(--lapiz); }
+.transformed-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.transformed-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--papel-2); border-radius: 6px; font-size: 14px; }
+.transformed-item .die-type { font-weight: 700; font-variant-numeric: tabular-nums; }
+.transformed-item .die-faces { font-size: 12px; color: var(--lapiz); }
+.dice-roll-result { margin-top: 16px; }
+.roll-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.roll-header .exitos { margin: 0; }
+.roll-header .btn.small { padding: 8px 14px; font-size: 14px; min-height: 38px; }
+#rollDetail { margin-top: 12px; font-size: 13px; line-height: 1.6; }
+#rollDetail b { color: var(--tinta); }
+
+/* d12+ y d6- badges en resultados */
+.die.d12p { position: relative; }
+.die.d12p::after { content: '+'; position: absolute; top: -4px; right: -4px; font-size: 10px; font-weight: 800; color: var(--sube); }
+.die.d6m { position: relative; }
+.die.d6m::after { content: '−'; position: absolute; top: -4px; right: -4px; font-size: 10px; font-weight: 800; color: var(--baja); }

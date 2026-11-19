@@ -624,7 +624,6 @@ function viewTablas() {
 }
 
 /* ---------- 6. HERRAMIENTAS ---------- */
-const dados = { n: 3, caras: 12, objetivo: 5 };
 
 function viewMesa() {
   const wrap = el(`<section>
@@ -632,27 +631,44 @@ function viewMesa() {
     <h2 class="page-title">Herramientas</h2>
 
     <div class="herramienta">
-      <h2>Tirar dados</h2>
-      <p class="sub">Éxito con 5 o más, salvo que la regla diga otra cosa.</p>
-      <div class="reserva">
-        <div class="selector">
-          <button type="button" id="menos" aria-label="Un dado menos">−</button>
-          <output id="dieCount" aria-live="polite">${dados.n}</output>
-          <button type="button" id="mas" aria-label="Un dado más">+</button>
+      <h2>Tirada de dados (pool + boost/burn)</h2>
+      <p class="sub">Añade dados al pool, indica boosts y burns netos. La app transforma la reserva según la cadena d6− → d6 → d8 → d12 → d12+ y tira.</p>
+
+      <div class="pool-editor" id="poolEditor">
+        <div class="pool-header">
+          <span>Pool de dados</span>
+          <span class="pool-total" id="poolTotal">0 dados</span>
         </div>
-        <div class="tipos" id="dieType" role="group" aria-label="Tipo de dado">
-          ${[6, 8, 12].map((c) => `<button type="button" data-c="${c}" class="${c === dados.caras ? 'on' : ''}">d${c}</button>`).join('')}
-        </div>
-        <label class="objetivo">Éxito con
-          <select class="field" id="dieTarget">
-            ${[4, 5, 6, 7, 8, 10].map((v) => `<option value="${v}" ${v === dados.objetivo ? 'selected' : ''}>${v}+</option>`).join('')}
+        <div class="pool-list" id="poolList"></div>
+        <div class="pool-add">
+          <select class="field" id="addDieType">
+            <option value="6">d6</option>
+            <option value="8" selected>d8</option>
+            <option value="12">d12</option>
           </select>
-        </label>
+          <input type="number" class="field small" id="addDieCount" value="1" min="1" max="20" aria-label="Cantidad" />
+          <button class="btn" id="addDieBtn" type="button">Añadir</button>
+        </div>
+        <div class="pool-mods">
+          <label>Boosts netos (▲): <input type="number" class="field small" id="boostCount" value="0" min="-20" max="20" step="1" aria-label="Boosts netos (positivo = boost, negativo = burn)" /></label>
+          <p class="note-line"><small>Boost = ▲ (sube escalón), Burn = ▼ (baja escalón). Se anulan entre sí: pon el neto. Ej: +2 = dos boosts; −1 = un burn.</small></p>
+        </div>
+        <button class="btn primary" id="transformBtn" type="button">Transformar pool</button>
       </div>
-      <button class="tirar" id="roll" type="button"></button>
-      <div id="diceRes" hidden>
-        <div class="exitos"><strong id="okN">0</strong><span id="okT">éxitos</span></div>
-        <div class="dice-out" id="diceOut"></div>
+
+      <div class="pool-result" id="poolResult" hidden>
+        <h3>Reserva transformada</h3>
+        <div class="transformed-list" id="transformedList"></div>
+        <button class="btn primary" id="rollPoolBtn" type="button">Tirar reserva</button>
+      </div>
+
+      <div class="dice-roll-result" id="diceRollResult" hidden>
+        <div class="roll-header">
+          <div class="exitos"><strong id="rollOkN">0</strong><span id="rollOkT">éxitos</span></div>
+          <button class="btn small" id="rerollBtn" type="button" aria-label="Tirar de nuevo">Tirar de nuevo</button>
+        </div>
+        <div class="dice-out" id="diceRollOut"></div>
+        <p class="note-line" id="rollDetail"></p>
       </div>
     </div>
 
@@ -673,39 +689,155 @@ function viewMesa() {
 
   wrap.querySelector('#back').addEventListener('click', () => go('mas'));
 
-  // dados
-  const roll = wrap.querySelector('#roll');
-  const count = wrap.querySelector('#dieCount');
-  function etiqueta() {
-    count.textContent = dados.n;
-    roll.textContent = `Tirar ${dados.n}d${dados.caras}`;
-  }
-  wrap.querySelector('#menos').addEventListener('click', () => { dados.n = Math.max(1, dados.n - 1); etiqueta(); });
-  wrap.querySelector('#mas').addEventListener('click', () => { dados.n = Math.min(20, dados.n + 1); etiqueta(); });
-  for (const b of wrap.querySelectorAll('#dieType button')) {
-    b.addEventListener('click', () => {
-      dados.caras = +b.dataset.c;
-      for (const x of wrap.querySelectorAll('#dieType button')) x.classList.toggle('on', x === b);
-      etiqueta();
-    });
-  }
-  wrap.querySelector('#dieTarget').addEventListener('change', (e) => { dados.objetivo = +e.target.value; });
-  etiqueta();
+  // ---- Pool de dados con boost/burn ----
+  const DIE_CHAIN = ['d6-', 'd6', 'd8', 'd12', 'd12+'];
+  const DIE_FACES = { 'd6-': 6, 'd6': 6, 'd8': 8, 'd12': 12, 'd12+': 12 };
 
-  roll.addEventListener('click', () => {
-    const values = [];
-    for (let i = 0; i < dados.n; i++) values.push(1 + Math.floor(Math.random() * dados.caras));
-    values.sort((a, b) => b - a);
-    const succ = values.filter((v) => v >= dados.objetivo).length;
-    wrap.querySelector('#diceRes').hidden = false;
-    wrap.querySelector('#okN').textContent = succ;
-    wrap.querySelector('#okT').textContent = `${succ === 1 ? 'éxito' : 'éxitos'} con ${dados.n}d${dados.caras} a ${dados.objetivo}+`;
-    wrap.querySelector('#diceOut').innerHTML = values
-      .map((v, i) => `<span class="die ${v >= dados.objetivo ? 'ok' : ''}" style="animation-delay:${i * 25}ms">${v}</span>`)
-      .join('');
+  let pool = []; // [{type: 'd6'|'d8'|'d12', count: n}]
+  let transformedPool = []; // [{type: 'd6-'|'d6'|'d8'|'d12'|'d12+', count: n}]
+
+  const poolList = wrap.querySelector('#poolList');
+  const poolTotal = wrap.querySelector('#poolTotal');
+
+  function renderPool() {
+    if (!pool.length) {
+      poolList.innerHTML = '<p class="note-line"><small>Pool vacío. Añade dados abajo.</small></p>';
+      poolTotal.textContent = '0 dados';
+      return;
+    }
+    poolTotal.textContent = pool.reduce((s, d) => s + d.count, 0) + ' dados';
+    poolList.innerHTML = pool.map((d, i) => `
+      <div class="pool-item">
+        <span class="die-type">${d.count}×d${d.type.slice(1)}</span>
+        <button class="btn small" type="button" data-i="${i}" data-act="del" aria-label="Eliminar">×</button>
+      </div>
+    `).join('');
+    for (const b of poolList.querySelectorAll('button[data-act="del"]')) {
+      b.addEventListener('click', () => {
+        pool.splice(+b.dataset.i, 1);
+        renderPool();
+        renderTransformed();
+      });
+    }
+  }
+
+  function applyBoostBurn(sourcePool, netBoost) {
+    // Expand to individual dice
+    let dice = [];
+    for (const d of sourcePool) {
+      for (let i = 0; i < d.count; i++) dice.push(d.type);
+    }
+    if (!dice.length) return [];
+
+    // Net boost/burn
+    let net = netBoost;
+    if (net > 0) {
+      // Boost: upgrade weakest dice first
+      dice.sort((a, b) => DIE_CHAIN.indexOf(a) - DIE_CHAIN.indexOf(b));
+      for (let i = 0; i < net && i < dice.length; i++) {
+        const idx = DIE_CHAIN.indexOf(dice[i]);
+        if (idx < DIE_CHAIN.length - 1) dice[i] = DIE_CHAIN[idx + 1];
+      }
+    } else if (net < 0) {
+      // Burn: downgrade strongest dice first
+      dice.sort((a, b) => DIE_CHAIN.indexOf(b) - DIE_CHAIN.indexOf(a));
+      for (let i = 0; i < -net && i < dice.length; i++) {
+        const idx = DIE_CHAIN.indexOf(dice[i]);
+        if (idx > 0) dice[i] = DIE_CHAIN[idx - 1];
+      }
+    }
+
+    // Special case: d6- (burned d6) - if it's the last die of its kind, it becomes 2d6 keep worst
+    // For display purposes we keep as d6-; rolling handles it
+
+    // Count by type
+    const counts = {};
+    for (const d of dice) counts[d] = (counts[d] || 0) + 1;
+    return Object.entries(counts).map(([type, count]) => ({ type, count }));
+  }
+
+  function renderTransformed() {
+    const net = +wrap.querySelector('#boostCount').value || 0;
+    transformedPool = applyBoostBurn(pool, net);
+
+    const tList = wrap.querySelector('#transformedList');
+    if (!transformedPool.length) {
+      tList.innerHTML = '<p class="note-line"><small>Pool vacío.</small></p>';
+      return;
+    }
+    tList.innerHTML = transformedPool.map((d) => {
+      const label = d.type === 'd12+' ? 'd12+' : d.type === 'd6-' ? 'd6−' : d.type;
+      const faces = DIE_FACES[d.type];
+      return `<div class="transformed-item"><span class="die-type">${d.count}×${label}</span><span class="die-faces">(${faces} caras)</span></div>`;
+    }).join('');
+  }
+
+  function rollTransformedPool() {
+    const results = [];
+    let detailParts = [];
+
+    for (const d of transformedPool) {
+      for (let i = 0; i < d.count; i++) {
+        let v;
+        if (d.type === 'd12+') {
+          const r1 = 1 + Math.floor(Math.random() * 12);
+          const r2 = 1 + Math.floor(Math.random() * 6);
+          v = Math.max(r1, r2);
+          detailParts.push(`d12+ → d12:${r1} + d6:${r2} = <b>${v}</b>`);
+        } else if (d.type === 'd6-') {
+          const r1 = 1 + Math.floor(Math.random() * 6);
+          const r2 = 1 + Math.floor(Math.random() * 6);
+          v = Math.min(r1, r2);
+          detailParts.push(`d6− → 2d6:${r1},${r2} = <b>${v}</b> (peor)`);
+        } else {
+          const faces = DIE_FACES[d.type];
+          v = 1 + Math.floor(Math.random() * faces);
+          detailParts.push(`${d.type}:<b>${v}</b>`);
+        }
+        results.push({ value: v, type: d.type });
+      }
+    }
+
+    // Sort: successes first, then by value desc
+    results.sort((a, b) => {
+      const sa = a.value >= 5, sb = b.value >= 5;
+      if (sa !== sb) return sb - sa;
+      return b.value - a.value;
+    });
+
+    const succ = results.filter(r => r.value >= 5).length;
+
+    wrap.querySelector('#diceRollResult').hidden = false;
+    wrap.querySelector('#rollOkN').textContent = succ;
+    wrap.querySelector('#rollOkT').textContent = `${succ === 1 ? 'éxito' : 'éxitos'}`;
+    wrap.querySelector('#diceRollOut').innerHTML = results.map((r, i) => 
+      `<span class="die ${r.value >= 5 ? 'ok' : ''}" style="animation-delay:${i * 20}ms">${r.value}</span>`
+    ).join('');
+    wrap.querySelector('#rollDetail').innerHTML = 'Detalle: ' + detailParts.join(' · ');
+  }
+
+  // Eventos pool
+  wrap.querySelector('#addDieBtn').addEventListener('click', () => {
+    const type = 'd' + wrap.querySelector('#addDieType').value;
+    const count = Math.min(20, Math.max(1, +wrap.querySelector('#addDieCount').value || 1));
+    const existing = pool.findIndex(d => d.type === type);
+    if (existing >= 0) pool[existing].count += count;
+    else pool.push({ type, count });
+    renderPool();
+    renderTransformed();
   });
 
-  // evento
+  wrap.querySelector('#boostCount').addEventListener('input', renderTransformed);
+  wrap.querySelector('#transformBtn').addEventListener('click', () => {
+    wrap.querySelector('#poolResult').hidden = false;
+    renderTransformed();
+  });
+  wrap.querySelector('#rollPoolBtn').addEventListener('click', rollTransformedPool);
+  wrap.querySelector('#rerollBtn').addEventListener('click', rollTransformedPool);
+
+  renderPool();
+
+  // ---- Evento aleatorio ----
   wrap.querySelector('#evt').addEventListener('click', () => {
     const n = 1 + Math.floor(Math.random() * 12);
     const ev = EVENTOS.find((e) => e.n === n);
@@ -714,7 +846,7 @@ function viewMesa() {
       : `<span class="n">${n}</span>`;
   });
 
-  // unidades
+  // ---- Control de unidades ----
   const KEY = 'vfv.units';
   let units = JSON.parse(localStorage.getItem(KEY) || '[]');
   if (!units.length) units = [{ n: 'Escuadra 1', stress: 0, morale: 0, fire: 0, acts: 0 }];

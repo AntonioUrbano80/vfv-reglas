@@ -9,6 +9,7 @@ window.VFV_GCE = {
       etiqueta: 'Franquista',
       nombre: 'Ejército sublevado',
       resumen: 'Redespliegue tras el despliegue y capacidad de quitar marcadores de activación.',
+      buscar: 'redespliegue despliegue quitar marcador activacion mandos fiables mando L quitar activacion',
       peloton: {
         n: 'Redespliegue',
         t: 'Una vez que ambas fuerzas hayan terminado de desplegar, puedes retirar una de tus unidades de la mesa y redesplegarla en cualquier lugar de tu área de despliegue. Esta unidad no puede ser del tipo vehículo.',
@@ -25,6 +26,7 @@ window.VFV_GCE = {
       etiqueta: 'Franquista',
       nombre: 'Ejército de África (la Legión)',
       resumen: 'Terror: penaliza la reagrupación enemiga cerca de los legionarios.',
+      buscar: 'terror legion legionarios penalizacion reagrupacion moral chequeo preparados iniciativa inferior d12 exito',
       peloton: {
         n: 'Terror',
         t: 'Las unidades enemigas a M de cualquier unidad de legionarios, pero no de una unidad de apoyo divisional, obtienen una penalización extra a la hora de realizar el chequeo de moral para reagruparse.',
@@ -41,6 +43,7 @@ window.VFV_GCE = {
       etiqueta: 'Franquista',
       nombre: 'Ejército de África (Regulares)',
       resumen: 'Terror, y una acción de movimiento que puede ganar una C extra.',
+      buscar: 'terror regulares legionarios penalizacion reagrupacion moral sufridos movimiento C extra apoyo divisional',
       peloton: {
         n: 'Terror',
         t: 'Las unidades enemigas a M de cualquier unidad de legionarios, pero no de una unidad de apoyo divisional, obtienen una penalización extra a la hora de realizar el chequeo de moral para reagruparse.',
@@ -57,6 +60,7 @@ window.VFV_GCE = {
       etiqueta: 'Franquista',
       nombre: 'Milicianos (Falange)',
       resumen: 'Una estrella de refuerzos gratis y repetición de impactos fallidos en carga.',
+      buscar: 'populares refuerzos gratis estrella fanaticos carga asalto repetir impactos fallidos d12',
       peloton: {
         n: 'Populares',
         t: 'A la hora de reunir tu banda, puedes añadir gratuitamente una estrella de refuerzos a tu fuerza.',
@@ -73,6 +77,7 @@ window.VFV_GCE = {
       etiqueta: 'Franquista',
       nombre: 'Milicianos (Requetés)',
       resumen: 'Refuerzos gratis y repetición de las salvaciones fallidas ante un disparo.',
+      buscar: 'populares refuerzos gratis estrella creyentes disparo salvaciones fallidas repetir d12',
       peloton: {
         n: 'Populares',
         t: 'A la hora de reunir tu banda, puedes añadir gratuitamente una estrella de refuerzos a tu fuerza.',
@@ -89,6 +94,7 @@ window.VFV_GCE = {
       etiqueta: 'Franquista · Italia',
       nombre: 'Corpo Truppe Volontarie',
       resumen: 'Sube la experiencia de una unidad y cambia sus chequeos de moral según las bajas.',
+      buscar: 'imprevisible experiencia d18 categoria impetu variable moral bajas destruidas bonificacion degradacion apoyo divisional italiano',
       peloton: {
         n: 'Imprevisible',
         t: 'Una vez por turno, elige una unidad y haz una tirada de 1D8. Si tiene éxito, el nivel de experiencia de la unidad crece una categoría hasta el final del turno.',
@@ -107,6 +113,7 @@ window.VFV_GCE = {
       etiqueta: 'Republicano',
       nombre: 'Ejército Popular de la República',
       resumen: 'Comisario político gratuito.',
+      buscar: 'comisario politico gratuito desplegar regla vfv',
       peloton: {
         n: 'Comisario',
         t: 'Si lo deseas, puedes desplegar gratuitamente un comisario político. Sus reglas se encuentran en el reglamento de V for Victory.',
@@ -123,6 +130,7 @@ window.VFV_GCE = {
       etiqueta: 'Republicano',
       nombre: 'Milicias y sindicatos (anarquistas)',
       resumen: 'Cobertura pesada temporal y disparos sin marcador de Fuego.',
+      buscar: 'parapetarse cobertura pesada d12 sigilo disparos sin marcador fuego 3d8 apoyo divisional',
       peloton: {
         n: 'Parapetarse',
         t: 'Al inicio del turno, puedes lanzar 1D12 y si obtienes éxito, una de tus unidades a tu elección contará como en cobertura pesada hasta el inicio del siguiente turno. No se pueden beneficiar unidades de apoyo divisional y la cobertura pesada no se puede acumular si la unidad ya se beneficiara de ella.',
@@ -139,6 +147,7 @@ window.VFV_GCE = {
       etiqueta: 'Republicano',
       nombre: 'Milicias y sindicatos (comunistas)',
       resumen: 'Refuerzos gratis y sacrificio de un soldado para superar un chequeo de moral.',
+      buscar: 'columnistas refuerzos gratis estrella purga chequeo moral sacrificar soldado quitar estres d12 apoyo divisional',
       peloton: {
         n: 'Columnistas',
         t: 'A la hora de reunir tu banda, puedes añadir gratuitamente una estrella de refuerzos a tu fuerza.',
@@ -155,6 +164,7 @@ window.VFV_GCE = {
       etiqueta: 'Republicano',
       nombre: 'Brigadas Internacionales',
       resumen: 'Reportero de guerra que añade 1D6 a los disparos y disparos de reacción sin penalización.',
+      buscar: 'cronistas reportero guerra 1d6 disparos voluntarios reaccion sin penalizacion d12 apoyo divisional',
       peloton: {
         n: 'Cronistas',
         t: 'Si lo deseas, puedes desplegar gratuitamente un reportero de guerra. A su lado, una unidad por turno añade 1D6 a todos sus disparos. No se benefician las unidades de apoyo divisional.',
@@ -171,6 +181,7 @@ window.VFV_GCE = {
       etiqueta: 'Republicano',
       nombre: 'Guardia de Asalto',
       resumen: 'Gana los empates en asalto y reparte estrés antes de jugar cartas.',
+      buscar: 'tenaces asalto empate ganador atacante respeto estres antes cartas d12 M apoyo divisional',
       peloton: {
         n: 'Tenaces',
         t: 'Si uno de tus equipos participa en un asalto que termine en empate, se te considerará el ganador, aunque fueras el atacante.',
@@ -187,6 +198,7 @@ window.VFV_GCE = {
       etiqueta: 'Compartida',
       nombre: 'Guardia Civil',
       resumen: '+1 a los dados de ataque si recibes un asalto, y acciones extra tras una acción enemiga.',
+      buscar: 'orgullosos asalto +1 dados ataque control accion extra tras accion enemiga d12 apoyo divisional bando',
       peloton: {
         n: 'Orgullosos',
         t: 'Si recibes un asalto, obtienes un bonificador de +1 a tus dados de ataque.',
@@ -205,6 +217,7 @@ window.VFV_GCE = {
       etiqueta: 'Compartida',
       nombre: 'Civiles armados',
       resumen: 'Marcador de camuflaje y reducción del apoyo del escenario.',
+      buscar: 'conocimiento terreno camuflaje cobertura pesada edificio d8 emboscada reducir apoyos escenario mitad sin apoyo divisional',
       peloton: {
         n: 'Conocimiento del terreno',
         t: 'Una vez durante cada turno, después de jugar y revelar una carta de activación, puedes lanzar 1D8. Si tienes éxito, puedes poner un marcador de camuflaje a un equipo situado completamente en cobertura pesada o en un edificio.',

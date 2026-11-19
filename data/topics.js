@@ -418,7 +418,8 @@ window.VFV_TOPICS = [
     buscar: 'asalto assault cuerpo a cuerpo cargar combatir',
     html: `
       <p><b>Quién puede asaltar:</b> solo unidades <b>confident o shaken</b>. Las <i>pinned</i> y
-      <i>panicked</i> no pueden, y los <b>vehículos tampoco</b> asaltan (aunque sí pueden ser asaltados).</p>
+      <i>panicked</i> no pueden, y los <b>vehículos tampoco</b> asaltan (aunque sí pueden ser asaltados; el
+      procedimiento está en el tema «Asaltar un vehículo»).</p>
       <p>Se declara el objetivo al anunciar la acción. El objetivo es cualquier unidad enemiga que quede
       <b>a S</b> del asaltante tras su movimiento y a la que tenga línea de fuego.</p>
       <h3>Resolución</h3>
@@ -440,6 +441,162 @@ window.VFV_TOPICS = [
       <div class="warn">Una unidad <i>panicked</i> asaltada no tira dados: <b>todas sus figuras se retiran</b>
       como bajas y la unidad se elimina.</div>`,
     refs: [{ doc: 'crb', page: 35 }, { doc: 'crb', page: 36 }, { doc: 'crb', page: 37 }],
+  },
+
+  {
+    id: 'asalto-vehiculos',
+    cat: 'Combate',
+    icono: '🚙',
+    titulo: 'Asaltar un vehículo',
+    resumen: 'La infantería no pelea contra el carro: llega a contacto y coloca una carga. El blindaje baja 1 y el open-topped cuenta como 0.',
+    buscar: 'asalto vehículo tanque carro blindado anti-tank assault carga granada demoler penetrar open topped',
+    html: `
+      <p>Un vehículo <b>no devuelve golpes</b>: en un asalto la infantería intenta llegar a contacto y colocar
+      una carga o una granada. Tiene su propio procedimiento y no se resuelve como el cuerpo a cuerpo normal.</p>
+
+      <h3>1. El líder llega a contacto</h3>
+      <p>Con un <b>advance de S</b> o un <b>run de 2S</b> (solo por terreno por el que pueda correr). El líder
+      debe <b>terminar en contacto</b> con el vehículo. Ese movimiento puede provocar <b>fuego reactivo</b> del
+      propio vehículo o de otra unidad con línea de fuego.</p>
+      <p>Si el asaltante se echa cuerpo a tierra o queda <i>pinned</i> o <i>panicked</i> por ese fuego,
+      <b>el asalto se detiene</b> tras el disparo. Si varios equipos asaltan a la vez, cada uno puede recibir
+      fuego reactivo de una unidad distinta y <b>basta con que uno llegue a contacto</b> para que el asalto
+      se resuelva.</p>
+
+      <h3>2. Figuras a S</h3>
+      <p>El resto de figuras se coloca a <b>S del líder</b> y en contacto con el vehículo.</p>
+
+      <h3>3. Reserva de dados</h3>
+      <table>
+        <tr><th>Figura</th><th>Dado</th></tr>
+        <tr><td>Con la regla <b>Anti-Tank Assault</b></td><td><b>1d8</b></td></tr>
+        <tr><td>Cualquier otra figura</td><td><b>1d6</b></td></tr>
+      </table>
+      <p>Se suman los dados de <b>todas</b> las unidades que participan en el asalto.</p>
+
+      <h3>4. Blindaje y factor AT</h3>
+      <p>La infantería ataca <b>por arriba</b>: el blindaje <b>baja 1</b> (mínimo 1). Un vehículo
+      <b>open-topped</b> cuenta como <b>blindaje 0</b> frente a un asalto de infantería.</p>
+      <p>El factor AT es <b>F</b> para casi todos los equipos y <b>E</b> para los que tienen
+      Anti-Tank Assault.</p>
+
+      <h3>5. Resolución</h3>
+      <p>Tira a impactar (5+). Con <b>3 impactos</b> tiras el dado que marque la tabla; cada impacto extra
+      lo <b>boostea</b> y cada uno que falte lo <b>quema</b>. Un resultado de <b>6+ destruye</b> el vehículo;
+      <b>exactamente 5</b> causa <b>daño ligero</b>.</p>
+      <p>Si el vehículo no queda destruido, recibe además <b>1 de Estrés</b>.</p>
+
+      <h3>6. Desenganche</h3>
+      <p>El equipo se retira <b>S</b>, recibe <b>1 de Estrés</b>, un <b>marcador de Fuego</b> y queda
+      <b>desactivado</b>. El vehículo defensor <b>no</b> queda desactivado.</p>
+      <div class="note">Para el dado de penetración usa la tabla de armas ligeras contra vehículos: los
+      factores E y F son los mismos que emplea la infantería a pie.</div>`,
+    refs: [{ doc: 'crb', page: 38 }, { doc: 'crb', page: 34 }],
+  },
+
+  {
+    id: 'artilleria',
+    cat: 'Combate',
+    icono: '💣',
+    titulo: 'Artillería y fuego indirecto',
+    resumen: 'Morteros (azotea, Unlimber, HE, indirecto) y obuses fuera de mesa (observador, desvío, corrección, baterías).',
+    buscar: 'artilleria mortero obus howitzer fuego indirecto observador desvio bateria HE azotea unlimber',
+    html: `
+      <p>El reglamento distingue dos tipos de artillería:</p>
+      <h3>Morteros (en mesa)</h3>
+      <ul>
+        <li>Solo pueden disparar desde una <b>azotea plana</b> (edificio).</li>
+        <li>Requieren acción <b>Unlimber</b> antes de disparar (y para reorientar).</li>
+        <li>Disparan <b>fuego indirecto</b>: no necesitan línea de visión al objetivo, solo que un <b>observador</b> (cualquier unidad amiga detectada) tenga línea de visión.</li>
+        <li>Potencia HE: ligero <b>HE (S)</b>, medio <b>HE (S)</b> (errata 2025: era M).</li>
+      </ul>
+      <h3>Obuses / Artillería fuera de mesa</h3>
+      <ul>
+        <li>Se dispara mediante <b>llamada de fuego</b>: el observador debe tener el objetivo detectado y en línea de visión.</li>
+        <li>Se tira <b>1d6</b> (errata 2025): <b>éxito (5+)</b> = impacto en el objetivo; <b>fallo</b> = el impacto se desvía y afecta a <b>mitad del pool de dados</b> (redondeando arriba).</li>
+        <li>Las tropas a <b>X del blanco</b> (distancia que indica el arma) son atacadas con <b>mitad de los dados</b>.</li>
+        <li>Varios tubos disparando a la vez = <b>batería</b>: se suman los pools y se resuelve una sola tirada de desvío.</li>
+      </ul>
+      <h3>Resolución común</h3>
+      <ol>
+        <li>Observador detecta objetivo y tiene línea de visión.</li>
+        <li>Se anuncia el arma y se monta el pool de dados (potencia del arma).</li>
+        <li>Se tira 1d6 para desvío (artillería fuera de mesa) o se resuelve directo (mortero en mesa con observador).</li>
+        <li>Impactos = éxitos; se aplica HE (ignora cobertura ligera/pesada en edificios/bosque denso/jungla → ▲2 al tirador).</li>
+        <li>Salvaciones normales (cobertura pesada = d12, fortificaciones = d12 repetible).</li>
+      </ol>
+      <div class="note"><b>Errata 2025 (e43 p.57):</b> Fuego indirecto = 1d6; fallo = mitad pool (redondeo arriba). Tropas a X del blanco = mitad dados.</div>`,
+    refs: [{ doc: 'crb', page: 30 }, { doc: 'crb', page: 46 }, { doc: 'e43', page: 57 }],
+  },
+
+  {
+    id: 'lanzallamas',
+    cat: 'Combate',
+    icono: '🔥',
+    titulo: 'Lanzallamas',
+    resumen: 'Alcance S, 2d6 HE (S). No reactivo (errata 2025). Devastador en edificios y bunkers. Fuerza chequeo de moral.',
+    buscar: 'lanzallamas flamethrower fuego reactivo edificio bunker moral panico',
+    html: `
+      <p>El lanzallamas es un arma especial de asalto cercano:</p>
+      <ul>
+        <li><b>Alcance:</b> S (10 cm).</li>
+        <li><b>Potencia:</b> <b>2d6</b> con regla <b>HE (S)</b>.</li>
+        <li><b>No puede usarse en fuego reactivo</b> (errata 2025, e43 p.54).</li>
+        <li>Contra unidades en <b>edificios</b> o <b>búnkeres</b>: ignora la cobertura (la explosión llena el espacio), causa <b>pánico</b> — la unidad objetivo hace chequeo de moral inmediato con <b>▼2</b>.</li>
+        <li>En asalto: potencia <b>2d6</b> en cuerpo a cuerpo.</li>
+        <li>El operador es una figura normal; si cae, el arma se pierde (no la puede recoger otro).</li>
+      </ul>
+      <div class="warn">Al ser HE, el tirador gana <b>▲2</b> contra edificios, bosque denso y jungla. Pero <b>no</b> gana bonificación contra vehículos (no es antitanque).</div>`,
+    refs: [{ doc: 'crb', page: 30 }, { doc: 'e43', page: 54 }, { doc: 'e43', page: 57 }],
+  },
+
+  {
+    id: 'francotirador',
+    cat: 'Combate',
+    icono: '🎯',
+    titulo: 'Francotirador',
+    resumen: 'Despliegue oculto, alcance 3L, d12+ (errata 2025). Tras disparar, rival tira 1d6: éxito = Fire marker. No objetivo prioritario.',
+    buscar: 'francotirador sniper oculto despliegue d12+ fire marker objetivo prioritario',
+    html: `
+      <p>El francotirador es un equipo de <b>una figura</b> con reglas únicas:</p>
+      <ul>
+        <li><b>Despliegue oculto:</b> se coloca en mesa boca abajo o se anota su posición. No cuenta para detección hasta que dispara o se le ve.</li>
+        <li><b>Perfil:</b> Alcance <b>3L</b>, Potencia <b>d12+</b> (errata 2025: era d12), Cuerpo a cuerpo <b>1d6</b>.</li>
+        <li><b>Tras disparar:</b> el rival tira <b>1d6</b>; con <b>éxito (5+)</b> coloca un <b>marcador de Fuego</b> en el francotirador (errata 2025, e43 p.54).</li>
+        <li><b>No es objetivo prioritario:</b> solo se le puede disparar si es la unidad enemiga <b>más cercana a L (30 cm)</b> de quien dispara.</li>
+        <li><b>Fuego reactivo:</b> puede disparar en reactivo (no tiene la restricción del lanzallamas).</li>
+        <li><b>Moral:</b> usa el dado de experiencia de su fuerza (Recruit d6 / Trained d8 / Elite d12).</li>
+      </ul>
+      <div class="note">El francotirador <b>no</b> tiene regla HE. Su potencia d12+ significa: tira d12 y d6, usa el mejor. No se puede potenciar otra vez.</div>`,
+    refs: [{ doc: 'crb', page: 30 }, { doc: 'e43', page: 54 }, { doc: 'e43', page: 57 }],
+  },
+
+  {
+    id: 'reservas',
+    cat: 'El turno',
+    icono: '⏳',
+    titulo: 'Reservas y entrada en mesa',
+    resumen: 'Regla general: tirada de llegada (ej. d8, 5+), entran por borde designado. Pueden activar ese turno. Variantes por escenario.',
+    buscar: 'reservas llegada entrada mesa borde tirada activacion escalonada refuerzos',
+    html: `
+      <p>Varios escenarios permiten o exigen mantener unidades en <b>reserva</b> (fuera de mesa al inicio). La regla general es:</p>
+      <h3>Llegada</h3>
+      <ul>
+        <li>Al inicio de una <b>fase de activación</b> (antes de revelar cartas), el jugador tira el dado que indique el escenario (habitualmente <b>d8</b>, éxito <b>5+</b>).</li>
+        <li>Con éxito, la unidad entra por el <b>borde de mesa designado</b> en el escenario (o acordado).</li>
+        <li>La unidad entra con un <b>advance</b> desde el borde; su líder debe poder colocarse a S del borde.</li>
+      </ul>
+      <h3>Activación</h3>
+      <p>La unidad que entra <b>puede activar en ese mismo turno</b>: forma parte de la fuerza y puede ser objetivo de cartas normalmente.</p>
+      <h3>Variantes por escenario</h3>
+      <ul>
+        <li><b>Escalonadas:</b> llegan por oleadas en turnos distintos (ej. Escenario 6 "The Road to Hell").</li>
+        <li><b>Desde fuera de mesa:</b> vehículos que entran por borde lateral (ej. Escenario 5 "The Crossroads").</li>
+        <li><b>Turno fijo + dado:</b> ej. Escenario 10 "We Must Hold": refuerzos a partir del turno 3, tirada d8, 5+.</li>
+        <li><b>Sin tirada (automáticas):</b> algunos escenarios las traen en turno fijo sin dado.</li>
+      </ul>
+      <div class="note">Las reservas <b>no cuentan para breakpoint</b> hasta que entran en mesa. Si la partida acaba antes de que lleguen, no se cuentan como bajas.</div>`,
+    refs: [{ doc: 'crb', page: 115 }, { doc: 'crb', page: 116 }, { doc: 'crb', page: 120 }],
   },
 
   {
@@ -955,8 +1112,8 @@ window.VFV_TOPICS = [
     cat: 'Ejército y escenarios',
     icono: '🗺️',
     titulo: 'Cómo leer un escenario',
-    resumen: 'Iniciativa, turnos, formato, despliegue, apoyo, objetivos y reglas especiales.',
-    buscar: 'escenario leer iniciativa turnos despliegue apoyo objetivos bonus cartas formato',
+    resumen: 'Iniciativa, turnos, formato, despliegue, apoyo, objetivos, reglas especiales y cartas de bonificación.',
+    buscar: 'escenario leer iniciativa turnos despliegue apoyo objetivos bonus cartas formato special rules',
     html: `
       <p>Todos los escenarios traen los mismos bloques:</p>
       <table>
@@ -974,21 +1131,22 @@ window.VFV_TOPICS = [
       <p>Los marcadores miden 2–3 cm y suelen venir numerados <b>1, 1, 2, 2, 2, 3</b>. Para controlar uno,
       el <b>comandante o un líder de equipo debe terminar una acción de movimiento en contacto</b> con él.
       <b>Los vehículos no controlan objetivos</b> y solo una miniatura puede estar en contacto.</p>
-      <h3>Los once escenarios</h3>
+      <h3>Los once escenarios — Reglas especiales clave</h3>
       <table>
-        <tr><th>#</th><th>Nombre</th><th>Apoyo</th><th>De qué va</th></tr>
-        <tr><td>1</td><td>First Encounter</td><td>2 ◇</td><td>Solo infantería: sin vehículos, edificios ni HE. El de iniciación.</td></tr>
-        <tr><td>2</td><td>Every Objective Counts</td><td>6 ◇</td><td>Cinco objetivos ocultos con valores distintos.</td></tr>
-        <tr><td>3</td><td>A Question of Balance</td><td>6 o 10 ◇</td><td>Simétrico; PV por bajas y por salir por el borde rival.</td></tr>
-        <tr><td>4</td><td>The Outskirts</td><td>defensor 3–6 ◇, atacante el doble</td><td>El defensor se atrinchera en tres edificios y sufre bombardeo.</td></tr>
-        <tr><td>5</td><td>The Crossroads</td><td>9 o 12 ◇</td><td>Cruce central; los vehículos entran desde fuera de la mesa.</td></tr>
-        <tr><td>6</td><td>The Road to Hell</td><td>6 vs 12 ◇</td><td>Camino con restos en llamas y llegadas escalonadas.</td></tr>
-        <tr><td>7</td><td>Shifting Lines</td><td>6 o 10 ◇</td><td>Cada jugador coloca sus objetivos y puede moverlos.</td></tr>
-        <tr><td>8</td><td>Escape</td><td>6 ◇</td><td>Un bando cercado debe salir por el borde sur.</td></tr>
-        <tr><td>9</td><td>A Tight Pinch</td><td>variable, la elige el defensor</td><td>Edificio central muy disputado.</td></tr>
-        <tr><td>10</td><td>We Must Hold</td><td>6 ◇</td><td>Río y puente; el defensor está atrincherado.</td></tr>
-        <tr><td>XL</td><td>Grand Manoeuvres</td><td>14 o 22 ◇ por equipo</td><td>Cuatro jugadores en dos equipos, mesa 180 × 120 cm.</td></tr>
-      </table>`,
+        <tr><th>#</th><th>Nombre</th><th>Apoyo</th><th>Reglas especiales (resumen)</th></tr>
+        <tr><td>1</td><td>First Encounter</td><td>2 ◇</td><td>Solo infantería: <b>sin vehículos, sin edificios, sin HE</b>. El de iniciación.</td></tr>
+        <tr><td>2</td><td>Every Objective Counts</td><td>6 ◇</td><td><b>5 objetivos ocultos</b> (valores 1/2/3 revelados al controlar). PV por objetivos y bajas.</td></tr>
+        <tr><td>3</td><td>A Question of Balance</td><td>6 o 10 ◇</td><td>Simétrico. PV por bajas, vehículos (½ ◇), figuras en borde rival (2 PV/fig). Turno extra con d6.</td></tr>
+        <tr><td>4</td><td>The Outskirts</td><td>defensor 3–6 ◇, atacante el doble</td><td><b>Bombardeo preparatorio:</b> d6 por unidad enemiga > L+M; éxito = howitzer 2d12 sin HE. Defensor <b>atrincherado (Entrenched)</b> en 3 edificios.</td></tr>
+        <tr><td>5</td><td>The Crossroads</td><td>9 o 12 ◇</td><td>Cruce central. <b>Vehículos entran desde fuera de mesa</b> (borde designado).</td></tr>
+        <tr><td>6</td><td>The Road to Hell</td><td>6 vs 12 ◇</td><td>Camino con <b>restos en llamas</b> (bloquean LoS, humo d12 viento). <b>Llegadas escalonadas</b>.</td></tr>
+        <tr><td>7</td><td>Shifting Lines</td><td>6 o 10 ◇</td><td>Cada jugador coloca sus <b>objetivos móviles</b> (dados) y puede <b>moverlos cada turno</b>.</td></tr>
+        <tr><td>8</td><td>Escape</td><td>6 ◇</td><td>Un bando cercado sale por <b>borde sur</b>. PV por líderes que escapan y por bajas.</td></tr>
+        <tr><td>9</td><td>A Tight Pinch</td><td>variable (elige defensor)</td><td><b>Edificio central</b> muy disputado. Defensor elige apoyo de ambos bandos.</td></tr>
+        <tr><td>10</td><td>We Must Hold</td><td>6 ◇</td><td><b>Río + puente</b>. Defensor atrincherado. <b>Refuerzos turno 3+</b> (d8, 5+).</td></tr>
+        <tr><td>XL</td><td>Grand Manoeuvres</td><td>14 o 22 ◇/equipo</td><td>4 jugadores, 2 equipos, mesa 180×120. Apoyo compartido (vehículos controlables por ambos).</td></tr>
+      </table>
+      <div class="note">Las <b>Bonus Cards</b> (mazo 20 = 2×10 efectos) se roban según indica cada escenario. Ver tabla en pestaña <a href="#tablas">Tablas</a>.</div>`,
     refs: [{ doc: 'crb', page: 69 }, { doc: 'crb', page: 70 }, { doc: 'crb', page: 111 }],
   },
 ];

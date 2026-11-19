@@ -221,6 +221,31 @@ window.VFV_TABLAS = [
   },
 
   {
+    id: 'asalto-vehiculos',
+    titulo: 'Asalto a vehículos',
+    nota: 'La infantería ataca por arriba: blindaje −1 (mínimo 1) y el open-topped cuenta como 0.',
+    html: `
+      <table>
+        <tr><th>Paso</th><th>Qué pasa</th></tr>
+        <tr><td>1</td><td>El líder llega a <b>contacto</b> con un advance de S o un run de 2S. Puede provocar
+          fuego reactivo; si se echa cuerpo a tierra o queda pinned/panicked, el asalto se detiene.</td></tr>
+        <tr><td>2</td><td>El resto de figuras se coloca a <b>S</b> del líder y en contacto con el vehículo.</td></tr>
+        <tr><td>3</td><td>Reserva: <b>1d8</b> por figura con Anti-Tank Assault, <b>1d6</b> el resto. Se suman
+          los dados de todas las unidades.</td></tr>
+        <tr><td>4</td><td>Blindaje <b>−1</b> (mínimo 1); <b>open-topped = 0</b>. Factor AT <b>F</b>, o <b>E</b>
+          con Anti-Tank Assault.</td></tr>
+        <tr><td>5</td><td>Impactar a 5+. <b>3 impactos</b> = dado de la tabla; extras boostean, faltantes
+          queman. <b>6+</b> destruye, <b>5 exacto</b> = daño ligero.</td></tr>
+        <tr><td>6</td><td>Si no arde, <b>1 Estrés</b> extra. Desenganche de S, <b>1 Estrés</b>, marcador de
+          Fuego y desactivado. El vehículo <b>no</b> queda desactivado.</td></tr>
+      </table>
+      <p class="note-line">Si varios equipos asaltan a la vez, cada uno puede recibir fuego reactivo de una
+      unidad distinta; basta con que uno llegue a contacto. El dado de penetración sale de la tabla de armas
+      ligeras (factores E y F).</p>`,
+    refs: [{ doc: 'crb', page: 38 }, { doc: 'crb', page: 34 }],
+  },
+
+  {
     id: 'moral',
     titulo: 'Moral y estrés',
     nota: 'Los chequeos de moral se hacen con el dado de la experiencia: 5+ es éxito.',
@@ -328,5 +353,112 @@ window.VFV_TABLAS = [
         <tr><td>Atravesar tropas</td><td>Gratis; si son enemigas, 1 Estrés</td></tr>
       </table>`,
     refs: [{ doc: 'crb', page: 51 }, { doc: 'crb', page: 52 }, { doc: 'crb', page: 54 }],
+  },
+
+  {
+    id: 'artilleria',
+    titulo: 'Artillería y fuego indirecto',
+    nota: 'Morteros en mesa (azotea, Unlimber) y obuses fuera de mesa (observador, 1d6 desvío, fallo = ½ pool). HE ignora cobertura en edificios/bosque denso.',
+    html: `
+      <table>
+        <tr><th>Arma</th><th>Alcance</th><th>Potencia</th><th>HE</th><th>Despliegue</th><th>Notas</th></tr>
+        <tr><td>Mortero ligero</td><td>4L</td><td>1d6</td><td>HE (S)</td><td>Azotea + Unlimber</td><td>Indirecto con observador</td></tr>
+        <tr><td>Mortero medio</td><td>5L</td><td>2d6</td><td>HE (S) *errata*</td><td>Azotea + Unlimber</td><td>Indirecto con observador; era HE (M)</td></tr>
+        <tr><td>Obús ligero</td><td>∞ (fuera mesa)</td><td>2d6</td><td>HE (M)</td><td>Llamada fuego</td><td>1d6 desvío; fallo = ½ pool (↑)</td></tr>
+        <tr><td>Obús medio</td><td>∞ (fuera mesa)</td><td>3d6</td><td>HE (L)</td><td>Llamada fuego</td><td>1d6 desvío; fallo = ½ pool (↑)</td></tr>
+        <tr><td>Obús pesado</td><td>∞ (fuera mesa)</td><td>4d6</td><td>HE (L)</td><td>Llamada fuego</td><td>Bombardeo prep.: 2d6 sin HE</td></tr>
+      </table>
+      <p class="note-line"><b>Procedimiento fuego indirecto (errata 2025):</b> 1) Observador detecta + LoS → 2) Monta pool → 3) Tira 1d6: 5+ = impacto objetivo; fallo = impacto desvía a ½ pool (redondeo ↑). Tropas a X del blanco = ½ dados.</p>
+      <p class="note-line"><b>Batería:</b> Varios tubos = suman pools, una sola tirada desvío.</p>
+      <p class="note-line"><b>HE en edificios/bosque denso/jungla:</b> tirador gana <b>▲2</b> (cobertura no protege de explosión).</p>`,
+    refs: [{ doc: 'crb', page: 30 }, { doc: 'crb', page: 46 }, { doc: 'e43', page: 57 }],
+  },
+
+  {
+    id: 'armas-infanteria',
+    titulo: 'Perfiles de armas de infantería',
+    nota: 'Incluye erratas 2025: SMG 2d6→d8, Francotirador d12+, Lanzallamas no reactivo, Mortero medio HE M→S, ATR éxitos=5.',
+    html: `
+      <table>
+        <tr><th>Arma</th><th>Alcance</th><th>Potencia</th><th>HE</th><th>Factor AT</th><th>Cuerpo a cuerpo</th><th>Notas</th></tr>
+        <tr><td>Rifle</td><td>2L</td><td>1d6</td><td>—</td><td>—</td><td>1d6</td><td>Base</td></tr>
+        <tr><td>SMG / Fusil asalto</td><td>2S</td><td><b>d8</b> *errata*</td><td>—</td><td>—</td><td><b>d8</b> *errata*</td><td>Era 2d6; también en CqC</td></tr>
+        <tr><td>LMG</td><td>2L</td><td>2d6</td><td>—</td><td>—</td><td>1d6</td><td>Cumbersome</td></tr>
+        <tr><td>HMG</td><td>3L</td><td>3d6</td><td>—</td><td>—</td><td>1d6</td><td>Cumbersome, Unlimber</td></tr>
+        <tr><td>Mortero ligero</td><td>4L</td><td>1d6</td><td>HE (S)</td><td>—</td><td>—</td><td>Solo azotea, indirecto</td></tr>
+        <tr><td>Mortero medio</td><td>5L</td><td>2d6</td><td><b>HE (S)</b> *errata*</td><td>—</td><td>—</td><td>Solo azotea, indirecto; era HE (M)</td></tr>
+        <tr><td>ATR (Fusil AT)</td><td>2L</td><td>—</td><td>—</td><td><b>E</b></td><td>1d6</td><td>Éxitos=5→daño ligero; 1d6 tras disparar: éxito = sin Fire</td></tr>
+        <tr><td>Lanzallamas</td><td>S</td><td>2d6</td><td>HE (S)</td><td>—</td><td>2d6</td><td><b>No reactivo</b> (errata 2025)</td></tr>
+        <tr><td>Panzerfaust</td><td>S</td><td>—</td><td>—</td><td><b>C</b></td><td>1d6</td><td>Portátil, anuncia antes</td></tr>
+        <tr><td>Bazooka / PIAT</td><td>S</td><td>—</td><td>—</td><td><b>D / E</b></td><td>1d6</td><td>Portátil, anuncia antes</td></tr>
+        <tr><td>Francotirador</td><td>3L</td><td><b>d12+</b> *errata*</td><td>—</td><td>—</td><td>1d6</td><td>Era d12; rival 1d6→Fire si acierta; no objetivo prioritario</td></tr>
+      </table>
+      <p class="note-line"><b>Cumbersome:</b> no puede correr. <b>Unlimber:</b> obligatorio antes de disparar (HMG, mortero, artillería).</p>
+      <p class="note-line"><b>Armas portátiles AT (Panzerfaust/Bazooka/PIAT/ATR):</b> se anuncian <b>antes</b> de resolver armas ligeras; una unidad puede hacer dos acciones de disparo en la misma orden (armas ligeras + portátil AT).</p>
+      <p class="note-line"><b>Francotirador d12+:</b> tira d12+d6, usa el mejor. No se puede potenciar otra vez. Despliegue oculto.</p>`,
+    refs: [{ doc: 'crb', page: 30 }, { doc: 'crb', page: 34 }, { doc: 'e43', page: 54 }, { doc: 'e43', page: 57 }],
+  },
+
+  {
+    id: 'blindaje-vehiculos',
+    titulo: 'Blindaje de vehículos comunes (Frente / Lado / Atrás / Techo)',
+    nota: 'Cruzar con tabla AT (Factor A–D) o armas ligeras (E–G). Blindaje −1 por flanco/retaguardia/arriba (mín 1). Open-topped = 0 en asalto infantería.',
+    html: `
+      <table>
+        <tr><th>Vehículo</th><th>Nación</th><th>Frente</th><th>Lado</th><th>Atrás</th><th>Techo</th><th>Notas</th></tr>
+        <tr><td>Panzer II</td><td>🇩🇪</td><td>2</td><td>1</td><td>1</td><td>0</td><td>Ligero</td></tr>
+        <tr><td>Panzer III J/L</td><td>🇩🇪</td><td>3</td><td>2</td><td>1</td><td>1</td><td></td></tr>
+        <tr><td>Panzer IV H/J</td><td>🇩🇪</td><td>4</td><td>3</td><td>2</td><td>1</td><td></td></tr>
+        <tr><td>StuG III G</td><td>🇩🇪</td><td>4</td><td>3</td><td>1</td><td>1</td><td>Casco -H-</td></tr>
+        <tr><td>Tiger I</td><td>🇩🇪</td><td>5</td><td>4</td><td>3</td><td>1</td><td></td></tr>
+        <tr><td>Tiger II</td><td>🇩🇪</td><td>6</td><td>5</td><td>4</td><td>2</td><td></td></tr>
+        <tr><td>Panther G</td><td>🇩🇪</td><td>5</td><td>3</td><td>2</td><td>1</td><td></td></tr>
+        <tr><td>SdKfz 251/1</td><td>🇩🇪</td><td>1</td><td>0</td><td>0</td><td>0</td><td>Semioruga, open-topped</td></tr>
+        <tr><td>SdKfz 234/1</td><td>🇩🇪</td><td>1</td><td>0</td><td>0</td><td>0</td><td>Ruedas, open-topped</td></tr>
+        <tr><td>T-34/76</td><td>🇷🇺</td><td>3</td><td>2</td><td>1</td><td>1</td><td></td></tr>
+        <tr><td>T-34/85</td><td>🇷🇺</td><td>4</td><td>3</td><td>2</td><td>1</td><td></td></tr>
+        <tr><td>KV-1</td><td>🇷🇺</td><td>4</td><td>3</td><td>3</td><td>1</td><td></td></tr>
+        <tr><td>IS-2</td><td>🇷🇺</td><td>5</td><td>4</td><td>3</td><td>2</td><td></td></tr>
+        <tr><td>BA-64</td><td>🇷🇺</td><td>1</td><td>0</td><td>0</td><td>0</td><td>Ruedas, open-topped</td></tr>
+        <tr><td>M4 Sherman</td><td>🇺🇸</td><td>3</td><td>2</td><td>1</td><td>1</td><td></td></tr>
+        <tr><td>M4A3E8 Easy Eight</td><td>🇺🇸</td><td>4</td><td>3</td><td>2</td><td>1</td><td></td></tr>
+        <tr><td>M10 Wolverine</td><td>🇺🇸</td><td>2</td><td>1</td><td>1</td><td>0</td><td>Open-topped, torreta</td></tr>
+        <tr><td>M18 Hellcat</td><td>🇺🇸</td><td>1</td><td>1</td><td>1</td><td>0</td><td>Ruedas, open-topped</td></tr>
+        <tr><td>M3/M5 Stuart</td><td>🇺🇸</td><td>2</td><td>1</td><td>1</td><td>0</td><td>Ligero</td></tr>
+        <tr><td>M8 Greyhound</td><td>🇺🇸</td><td>1</td><td>0</td><td>0</td><td>0</td><td>Ruedas, open-topped</td></tr>
+        <tr><td>Churchill III/IV</td><td>🇬🇧</td><td>4</td><td>3</td><td>2</td><td>1</td><td>Lento (orugas 2R)</td></tr>
+        <tr><td>Cromwell</td><td>🇬🇧</td><td>3</td><td>2</td><td>1</td><td>1</td><td>Rápido</td></tr>
+        <tr><td>Valentine</td><td>🇬🇧</td><td>3</td><td>2</td><td>1</td><td>1</td><td></td></tr>
+        <tr><td>M13/40</td><td>🇮🇹</td><td>2</td><td>1</td><td>1</td><td>0</td><td></td></tr>
+        <tr><td>Semovente 75/18</td><td>🇮🇹</td><td>2</td><td>1</td><td>1</td><td>0</td><td>Casco -H-</td></tr>
+        <tr><td>Char B1 bis</td><td>🇫🇷</td><td>4</td><td>3</td><td>2</td><td>1</td><td>Casco + torreta</td></tr>
+        <tr><td>Somua S35</td><td>🇫🇷</td><td>3</td><td>2</td><td>1</td><td>1</td><td></td></tr>
+        <tr><td>Hotchkiss H39</td><td>🇫🇷</td><td>2</td><td>1</td><td>1</td><td>0</td><td></td></tr>
+      </table>
+      <p class="note-line">Uso: cruzar Factor AT (A–D) o armas ligeras (E–G) con blindaje. <b>Flanco/retaguardia/arriba = blindaje −1 (mín 1)</b>. <b>Open-topped = 0</b> en asalto infantería. No se aplica a blindaje 0.</p>`,
+    refs: [{ doc: 'crb', page: 33 }, { doc: 'crb', page: 34 }, { doc: 'crb', page: 38 }],
+  },
+
+  {
+    id: 'bonus-cards',
+    titulo: 'Cartas de bonificación (Bonus Cards)',
+    nota: 'Mazo 20 cartas = 2 copias × 10 efectos. Nunca dos iguales sobre la misma acción. Se rebaraja si se agota.',
+    html: `
+      <table>
+        <tr><th>#</th><th>Efecto</th><th>Cuándo se juega</th></tr>
+        <tr><td>1</td><td><b>+2d6</b> al pool de disparo (no AT)</td><td>Tras montar reserva, aplicar boosts/burns</td></tr>
+        <tr><td>2</td><td><b>+1d12</b> al pool de disparo (no AT)</td><td>Ídem</td></tr>
+        <tr><td>3</td><td>Añade orden <b>Tactical</b> a carta en juego; si ya tiene, <b>+1</b> a su valor</td><td>Al resolver tu carta</td></tr>
+        <tr><td>4</td><td><b>Sustituye cualquier tirada por 1d6</b></td><td>Después de cualquier tirada</td></tr>
+        <tr><td>5</td><td>Tira el dado indicado: <b>éxito = anula 1 baja</b></td><td>Cuando un equipo sufre una baja</td></tr>
+        <tr><td>6</td><td>Añade orden <b>Engage</b> a carta en juego; si ya tiene, <b>+1</b></td><td>Al resolver tu carta</td></tr>
+        <tr><td>7</td><td>Añade orden <b>Move</b> a carta en juego; si ya tiene, <b>+1</b></td><td>Al resolver tu carta</td></tr>
+        <tr><td>8</td><td><b>+1 columna</b> a spotting hasta resolver carta</td><td>Durante intento de detección</td></tr>
+        <tr><td>9</td><td><b>+2d6</b> al pool de defensa</td><td>Antes de tirar reserva de defensa</td></tr>
+        <tr><td>10</td><td><b>+1d12</b> al pool de defensa</td><td>Antes de tirar reserva de defensa</td></tr>
+      </table>
+      <p class="note-line"><b>Regla:</b> Nunca dos cartas con la misma ilustración afectan a la misma acción (ej. una sola Ammo! por disparo, una sola Medical! por baja).</p>
+      <p class="note-line">Si el mazo se agota, <b>se barajan los descartes</b> para formar uno nuevo.</p>`,
+    refs: [{ doc: 'crb', page: 17 }, { doc: 'crb', page: 18 }],
   },
 ];
