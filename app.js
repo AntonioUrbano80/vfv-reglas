@@ -957,8 +957,9 @@ function viewMesa() {
   }
 
   // ---- Pool de dados con boost/burn ----
-  const DIE_CHAIN = ['d6-', 'd6', 'd8', 'd12', 'd12+'];
-  const DIE_FACES = { 'd6-': 6, 'd6': 6, 'd8': 8, 'd12': 12, 'd12+': 12 };
+  // Cadena normal: d6 → d8 → d12. d12+ y d6- son resultados especiales, no pasos de la cadena.
+  const DIE_RANK = { 'd6': 0, 'd8': 1, 'd12': 2 };
+  const DIE_FACES = { 'd6': 6, 'd8': 8, 'd12': 12, 'd12+': 12, 'd6-': 6 };
 
   let pool = []; // [{type: 'd6'|'d8'|'d12', count: n}]
   let transformedPool = [];
@@ -989,32 +990,69 @@ function viewMesa() {
   }
 
   function applyBoostBurn(sourcePool, netBoost) {
-    // Expand to individual dice
+    // Expandir a dados individuales
     let dice = [];
     for (const d of sourcePool) {
       for (let i = 0; i < d.count; i++) dice.push(d.type);
     }
     if (!dice.length) return [];
 
-    // Net boost/burn
     let net = netBoost;
+
     if (net > 0) {
-      // Boost: upgrade weakest dice first
-      dice.sort((a, b) => DIE_CHAIN.indexOf(a) - DIE_CHAIN.indexOf(b));
-      for (let i = 0; i < net && i < dice.length; i++) {
-        const idx = DIE_CHAIN.indexOf(dice[i]);
-        if (idx < DIE_CHAIN.length - 1) dice[i] = DIE_CHAIN[idx + 1];
+      // BOOST: subir los más débiles primero
+      for (let b = 0; b < net; b++) {
+        // Ordenar: d6(0) < d8(1) < d12(2) < d12+(3) - pero d12+ no se puede boostear
+        dice.sort((a, b) => {
+          const ra = a === 'd12+' ? 99 : DIE_RANK[a] ?? 0;
+          const rb = b === 'd12+' ? 99 : DIE_RANK[b] ?? 0;
+          return ra - rb;
+        });
+        // Buscar el primer dado que se pueda boostear (no d12+)
+        let boosted = false;
+        for (let i = 0; i < dice.length; i++) {
+          if (dice[i] === 'd6') { dice[i] = 'd8'; boosted = true; break; }
+          else if (dice[i] === 'd8') { dice[i] = 'd12'; boosted = true; break; }
+          else if (dice[i] === 'd12') { dice[i] = 'd12+'; boosted = true; break; }
+          // d12+ no se puede boostear, saltar
+        }
+        if (!boosted) break; // todos son d12+, no se puede hacer más
       }
     } else if (net < 0) {
-      // Burn: downgrade strongest dice first
-      dice.sort((a, b) => DIE_CHAIN.indexOf(b) - DIE_CHAIN.indexOf(a));
-      for (let i = 0; i < -net && i < dice.length; i++) {
-        const idx = DIE_CHAIN.indexOf(dice[i]);
-        if (idx > 0) dice[i] = DIE_CHAIN[idx - 1];
+      // BURN: bajar los más fuertes primero
+      for (let b = 0; b < -net; b++) {
+        // Ordenar: d12+(3) > d12(2) > d8(1) > d6(0) > d6-(-1)
+        dice.sort((a, b) => {
+          const rank = (d) => {
+            if (d === 'd12+') return 3;
+            if (d === 'd6-') return -1;
+            return DIE_RANK[d] ?? 0;
+          };
+          return rank(b) - rank(a);
+        });
+        // Buscar el primer dado que se pueda quemar
+        let burned = false;
+        for (let i = 0; i < dice.length; i++) {
+          if (dice[i] === 'd12+') { dice[i] = 'd12'; burned = true; break; }
+          else if (dice[i] === 'd12') { dice[i] = 'd8'; burned = true; break; }
+          else if (dice[i] === 'd8') { dice[i] = 'd6'; burned = true; break; }
+          else if (dice[i] === 'd6') {
+            // d6 quemado: se elimina, salvo que sea el ÚLTIMO dado del pool
+            if (dice.length === 1) {
+              dice[i] = 'd6-'; // último dado: se convierte en d6-
+            } else {
+              dice.splice(i, 1); // se elimina
+            }
+            burned = true;
+            break;
+          }
+          // d6- no se puede quemar más
+        }
+        if (!burned) break; // no hay dados quemables (solo d6-)
       }
     }
 
-    // Count by type
+    // Contar por tipo
     const counts = {};
     for (const d of dice) counts[d] = (counts[d] || 0) + 1;
     return Object.entries(counts).map(([type, count]) => ({ type, count }));
