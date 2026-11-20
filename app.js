@@ -723,6 +723,26 @@ const MODIFIER_TABLES = {
   }
 };
 
+// Tabla de detección (spotting) - NO usa dados, usa columnas de distancia
+const DETECCION_BASE = '3L';
+const DETECCION_COLUMNAS = ['M', 'L', '2L', '3L', '>3L'];
+const DETECCION_DISTANCIAS = { 'M': '15 cm', 'L': '30 cm', '2L': '60 cm', '3L': '90 cm', '>3L': 'Toda la mesa' };
+
+const DETECCION_MODS = [
+  { key: 'det_obj_equipo_pequeno', label: 'Equipo ≤2 fig / Recon', cat: 'Objetivo', delta: -1 },
+  { key: 'det_obj_camuflada', label: 'Unidad camuflada', cat: 'Objetivo', delta: -3 },
+  { key: 'det_obj_fuego', label: 'Tiene marcador de Fuego', cat: 'Objetivo', delta: +2 },
+  { key: 'det_obj_vehiculo', label: 'Es un vehículo', cat: 'Objetivo', delta: +2 },
+  { key: 'det_obs_vehiculo', label: 'Vehículo (salvo descubierto)', cat: 'Observador', delta: -1 },
+  { key: 'det_clima_lluvia', label: 'Lluvia / Cielo cubierto', cat: 'Clima', delta: -1 },
+  { key: 'det_clima_niebla', label: 'Niebla / Oscuridad', cat: 'Clima', delta: -2 },
+  { key: 'det_ter_obstaculo', label: 'Cada obstáculo lineal cruzado', cat: 'Terreno', delta: -1 },
+  { key: 'det_ter_cob_ligera', label: 'Cobertura ligera, por S', cat: 'Terreno', delta: -1 },
+  { key: 'det_ter_cob_pesada', label: 'Cobertura pesada, por S', cat: 'Terreno', delta: -2 },
+];
+
+let deteccionCounts = {};
+
 function viewMesa() {
   const wrap = el(`<section>
     <button class="volver" id="back" type="button">${icon('volver')} Más</button>
@@ -737,7 +757,6 @@ function viewMesa() {
         <button class="tab-btn" data-tab="mods-antipersona">Antipersonal</button>
         <button class="tab-btn" data-tab="mods-antitanque">Antitanque</button>
         <button class="tab-btn" data-tab="mods-asalto">Asalto</button>
-        <button class="tab-btn" data-tab="mods-deteccion">Detección</button>
         <button class="tab-btn" data-tab="mods-moral">Moral</button>
         <button class="tab-btn" data-tab="mods-manual">Manual</button>
       </div>
@@ -785,7 +804,6 @@ function viewMesa() {
       <div class="tab-panel" id="tab-mods-antipersona"></div>
       <div class="tab-panel" id="tab-mods-antitanque"></div>
       <div class="tab-panel" id="tab-mods-asalto"></div>
-      <div class="tab-panel" id="tab-mods-deteccion"></div>
       <div class="tab-panel" id="tab-mods-moral"></div>
       <div class="tab-panel" id="tab-mods-manual">
         <div class="pool-mods">
@@ -795,8 +813,38 @@ function viewMesa() {
       </div>
     </div>
 
+    <!-- HERRAMIENTA 2: Detección (Spotting) - Independiente, sin dados -->
     <div class="herramienta">
-      <h2>Evento aleatorio</h2>
+      <h2>Detección (Spotting)</h2>
+      <p class="sub">La detección base es <strong>3L (90 cm)</strong>. Los modificadores mueven la columna: burns a la izquierda (peor), boosts a la derecha (mejor). Mínimo <strong>M (15 cm)</strong>, máximo <strong>>3L (toda la mesa)</strong>. No hay tirada de dados.</p>
+
+      <div class="deteccion-tool" id="deteccionTool">
+        <div class="deteccion-resultado" id="deteccionResultado">
+          <div class="det-columna-actual">
+            <span class="det-label">Columna actual:</span>
+            <span class="det-valor" id="detColumna">3L</span>
+          </div>
+          <div class="det-distancia">
+            <span class="det-label">Distancia:</span>
+            <span class="det-valor" id="detDistancia">90 cm</span>
+          </div>
+          <div class="det-neto">
+            <span class="det-label">Neto:</span>
+            <span class="det-valor" id="detNeto">0</span>
+          </div>
+        </div>
+
+        <div class="deteccion-mods" id="deteccionModsList">
+          <!-- Se genera dinámicamente -->
+        </div>
+
+        <div class="deteccion-nota note-line">
+          <small>Boost y burn se anulan (neto). Quien observa y toca obstáculo lineal NO sufre su penalización. Recon y "equipo ≤2 fig" no se acumulan (solo -1). FAQ 2025: penalización -1 solo si <3 fig Y sin marcador Fuego. Mínimo M, máximo >3L.</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- HERRAMIENTA 3: Evento aleatorio -->
       <p class="sub">Se tira 1D12 cuando hay empate de iniciativa, tras resolverse ambas cartas.</p>
       <button class="btn primary" id="evt" type="button">Tirar 1D12</button>
       <div id="evtOut" class="evento"></div>
@@ -1107,6 +1155,75 @@ function viewMesa() {
   wrap.querySelector('#manualBoostCount')?.addEventListener('input', updateNetDisplay);
 
   renderPool();
+
+  // ==================== HERRAMIENTA 2: DETECCIÓN ====================
+  // deteccionCounts ya declarado globalmente
+
+  function renderDeteccion() {
+    const list = wrap.querySelector('#deteccionModsList');
+    if (!list) return;
+
+    const byCat = {};
+    for (const mod of DETECCION_MODS) {
+      if (!byCat[mod.cat]) byCat[mod.cat] = [];
+      byCat[mod.cat].push(mod);
+    }
+
+    let html = '';
+    for (const [cat, mods] of Object.entries(byCat)) {
+      html += `<div class="mod-category"><h4>${cat}</h4><div class="mod-list">`;
+      for (const mod of mods) {
+        const count = deteccionCounts[mod.key] || 0;
+        const sign = mod.delta >= 0 ? '+' : '';
+        html += `
+          <div class="mod-item">
+            <label class="mod-label">${VFV.escapeHtml(mod.label)} <span class="mod-net">(${sign}${mod.delta})</span></label>
+            <div class="mod-counter">
+              <button type="button" class="btn small" data-mod="${mod.key}" data-delta="-1" ${count <= 0 ? 'disabled' : ''} aria-label="Quitar">−</button>
+              <output class="mod-count" id="detcount-${mod.key}">${count}</output>
+              <button type="button" class="btn small" data-mod="${mod.key}" data-delta="1" aria-label="Añadir">+</button>
+            </div>
+          </div>`;
+      }
+      html += `</div></div>`;
+    }
+    list.innerHTML = html;
+
+    list.querySelectorAll('.mod-counter button').forEach(b => {
+      b.addEventListener('click', () => {
+        const key = b.dataset.mod;
+        const delta = +b.dataset.delta;
+        deteccionCounts[key] = Math.max(0, (deteccionCounts[key] || 0) + delta);
+        renderDeteccion();
+        updateDeteccionDisplay();
+      });
+    });
+  }
+
+  function updateDeteccionDisplay() {
+    let net = 0;
+    for (const mod of DETECCION_MODS) {
+      const count = deteccionCounts[mod.key] || 0;
+      net += mod.delta * count;
+      const el = wrap.querySelector('#detcount-' + mod.key);
+      if (el) el.textContent = count;
+    }
+
+    const baseIdx = 3;
+    const newIdx = Math.max(0, Math.min(DETECCION_COLUMNAS.length - 1, baseIdx + net));
+    const columna = DETECCION_COLUMNAS[newIdx];
+    const distancia = DETECCION_DISTANCIAS[columna];
+
+    wrap.querySelector('#detColumna').textContent = columna;
+    wrap.querySelector('#detDistancia').textContent = distancia;
+    wrap.querySelector('#detNeto').textContent = net >= 0 ? '+' + net : net;
+
+    const netEl = wrap.querySelector('#detNeto');
+    netEl.style.color = net > 0 ? 'var(--sube)' : net < 0 ? 'var(--baja)' : 'var(--tinta)';
+  }
+
+  renderDeteccion();
+  updateDeteccionDisplay();
 
   // ---- Evento aleatorio ----
   wrap.querySelector('#evt').addEventListener('click', () => {
