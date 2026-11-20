@@ -625,6 +625,140 @@ function viewTablas() {
 
 /* ---------- 6. HERRAMIENTAS ---------- */
 
+// Tablas de modificadores extraídas de la hoja de referencia rápida v2.5
+const MODIFIER_TABLES = {
+  antipersona: {
+    titulo: 'Fuego Antipersonal / Armas Ligeras vs Vehículo Ligero',
+    categorias: [
+      {
+        nombre: 'Tirador',
+        mods: [
+          { id: 'tirador_elite', label: 'Unidad Élite', boost: 1, burn: 0 },
+          { id: 'tirador_recluta', label: 'Unidad Recluta', boost: 0, burn: 1 },
+          { id: 'tirador_shaken', label: 'Unidad Shaken (amarilla)', boost: 0, burn: 2 },
+          { id: 'tirador_reactivo', label: 'Fuego reactivo', boost: 0, burn: 2 },
+          { id: 'tirador_torreta', label: 'Giró torreta antes de disparar', boost: 0, burn: 1 },
+        ]
+      },
+      {
+        nombre: 'Objetivo (solo equipos, no se acumulan)',
+        mods: [
+          { id: 'obj_equipo_pequeno', label: 'Equipo de ≤2 figuras', boost: 0, burn: 1 },
+          { id: 'obj_cuerpo_tierra', label: 'Cuerpo a tierra / Camuflada', boost: 0, burn: 2 },
+        ]
+      },
+      {
+        nombre: 'Cobertura del objetivo (solo infantería; no en supresión)',
+        mods: [
+          { id: 'cob_ligera', label: 'Cobertura ligera / Recon', boost: 0, burn: 1 },
+          { id: 'cob_pesada', label: 'Cobertura pesada', boost: 0, burn: 2 },
+          { id: 'cob_he_edificios', label: 'HE vs edificios/bosque denso/jungla', boost: 2, burn: 0 },
+        ]
+      }
+    ],
+    nota: 'Los mods marcados en verde (equipo ≤2 fig, cob. ligera/pesada) NO se aplican al fuego indirecto. Cuerpo a tierra: objetivo recibe 1 estrés + tirador 2 burns.'
+  },
+  antitanque: {
+    titulo: 'Fuego Antitanque (Factores A–D)',
+    categorias: [
+      {
+        nombre: 'Tirador',
+        mods: [
+          { id: 'at_tirador_elite', label: 'Unidad Élite', boost: 1, burn: 0 },
+          { id: 'at_tirador_recluta', label: 'Unidad Recluta', boost: 0, burn: 1 },
+          { id: 'at_tirador_shaken', label: 'Unidad Shaken', boost: 0, burn: 2 },
+          { id: 'at_tirador_reactivo', label: 'Fuego reactivo', boost: 0, burn: 2 },
+          { id: 'at_tirador_movio', label: 'Movió antes de disparar', boost: 0, burn: 1 },
+          { id: 'at_tirador_torreta', label: 'Giró torreta', boost: 0, burn: 1 },
+        ]
+      },
+      {
+        nombre: 'Cobertura del vehículo (≥ mitad tapado)',
+        mods: [
+          { id: 'at_cob_ligera', label: 'Cobertura ligera / Recon', boost: 0, burn: 1 },
+          { id: 'at_cob_pesada', label: 'Cobertura pesada', boost: 0, burn: 2 },
+        ]
+      }
+    ],
+    nota: 'Blindaje baja 1 (mín 1) por flanco/retaguardia/arriba. No aplica a blindaje 0. Si no destruye, +1 estrés al final.'
+  },
+  asalto: {
+    titulo: 'Asalto (Cuerpo a cuerpo)',
+    categorias: [
+      {
+        nombre: 'Atacante / Defensor',
+        mods: [
+          { id: 'asalto_elite', label: 'Unidad Élite', boost: 1, burn: 0 },
+          { id: 'asalto_recluta', label: 'Unidad Recluta', boost: 0, burn: 1 },
+          { id: 'asalto_atacante', label: 'Unidades atacantes', boost: 2, burn: 0 },
+          { id: 'asalto_defensor_desactivado', label: 'Defensor desactivado (sorprendido)', boost: 0, burn: 2 },
+          { id: 'asalto_shaken_pinned', label: 'Unidad Shaken o Pinned', boost: 0, burn: 2 },
+        ]
+      },
+      {
+        nombre: 'Cobertura',
+        mods: [
+          { id: 'asalto_cob_ligera', label: 'En/detrás de cobertura ligera', boost: 0, burn: 1 },
+          { id: 'asalto_cob_pesada', label: 'En/detrás de cobertura pesada', boost: 0, burn: 2 },
+        ]
+      }
+    ],
+    nota: 'FAQ 2025: infantería que asalta NO puede echarse cuerpo a tierra ante reactivo. Shaken = -2, Pinned = -4 (se separan). Empate = gana defensor. Panicked en asalto = todas las figuras se retiran como bajas.'
+  },
+  deteccion: {
+    titulo: 'Detección (Spotting) — Base 3L (columna roja)',
+    categorias: [
+      {
+        nombre: 'Objetivo',
+        mods: [
+          { id: 'det_obj_equipo_pequeno', label: 'Equipo ≤2 fig / Recon', boost: 0, burn: 1 },
+          { id: 'det_obj_camuflada', label: 'Unidad camuflada', boost: 0, burn: 3 },
+          { id: 'det_obj_fuego', label: 'Tiene marcador de Fuego', boost: 2, burn: 0 },
+          { id: 'det_obj_vehiculo', label: 'Es un vehículo', boost: 2, burn: 0 },
+        ]
+      },
+      {
+        nombre: 'Observador',
+        mods: [
+          { id: 'det_obs_vehiculo', label: 'Vehículo (salvo descubierto)', boost: 0, burn: 1 },
+        ]
+      },
+      {
+        nombre: 'Clima (el peor)',
+        mods: [
+          { id: 'det_clima_lluvia', label: 'Lluvia / Cielo cubierto', boost: 0, burn: 1 },
+          { id: 'det_clima_niebla', label: 'Niebla / Oscuridad', boost: 0, burn: 2 },
+        ]
+      },
+      {
+        nombre: 'Terreno',
+        mods: [
+          { id: 'det_ter_obstaculo', label: 'Cada obstáculo lineal cruzado', boost: 0, burn: 1 },
+          { id: 'det_ter_cob_ligera', label: 'Cobertura ligera, por S', boost: 0, burn: 1 },
+          { id: 'det_ter_cob_pesada', label: 'Cobertura pesada, por S', boost: 0, burn: 2 },
+        ]
+      }
+    ],
+    nota: 'Acumulativos. Mínimo M. >3L = toda la mesa. Quien observa y toca obstáculo lineal NO sufre su penalización. Recon y "equipo ≤2 fig" no se acumulan (solo -1). FAQ 2025: penalización -1 solo si <3 fig Y sin marcador Fuego.'
+  },
+  moral: {
+    titulo: 'Chequeo de Moral — Éxito 5+',
+    categorias: [
+      {
+        nombre: 'Modificadores (acumulables)',
+        mods: [
+          { id: 'mor_comandante', label: 'Comandante a M o menos (sin ver)', boost: 1, burn: 0 },
+          { id: 'mor_cob_pesada', label: 'Cobertura pesada vs todos enemigos', boost: 1, burn: 0 },
+          { id: 'mor_enemigo_cerca', label: 'Enemigo a M o menos con LoS', boost: 0, burn: 1 },
+          { id: 'mor_pinned_panicked', label: 'Unidad Pinned o Panicked', boost: 0, burn: 1 },
+          { id: 'mor_mitad_bajas', label: '>50% bajas (solo si empezó con 3+)', boost: 0, burn: 1 },
+        ]
+      }
+    ],
+    nota: 'Dado: Recruit d6, Trained d8, Elite d12. 3er estrés = baja moral y descarta todo estrés. Panicked: chequeo por cada estrés posterior.'
+  }
+};
+
 function viewMesa() {
   const wrap = el(`<section>
     <button class="volver" id="back" type="button">${icon('volver')} Más</button>
@@ -632,43 +766,68 @@ function viewMesa() {
 
     <div class="herramienta">
       <h2>Tirada de dados (pool + boost/burn)</h2>
-      <p class="sub">Añade dados al pool, indica boosts y burns netos. La app transforma la reserva según la cadena d6− → d6 → d8 → d12 → d12+ y tira.</p>
+      <p class="sub">Añade dados al pool, selecciona modificadores de la tabla de referencia o pon boost/burn neto manual. La app transforma la reserva según la cadena d6− → d6 → d8 → d12 → d12+ y tira.</p>
 
-      <div class="pool-editor" id="poolEditor">
-        <div class="pool-header">
-          <span>Pool de dados</span>
-          <span class="pool-total" id="poolTotal">0 dados</span>
+      <div class="dice-tool-tabs" id="diceToolTabs">
+        <button class="tab-btn active" data-tab="pool">Pool</button>
+        <button class="tab-btn" data-tab="mods-antipersona">Antipersonal</button>
+        <button class="tab-btn" data-tab="mods-antitanque">Antitanque</button>
+        <button class="tab-btn" data-tab="mods-asalto">Asalto</button>
+        <button class="tab-btn" data-tab="mods-deteccion">Detección</button>
+        <button class="tab-btn" data-tab="mods-moral">Moral</button>
+        <button class="tab-btn" data-tab="mods-manual">Manual</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-pool">
+        <div class="pool-editor" id="poolEditor">
+          <div class="pool-header">
+            <span>Pool de dados</span>
+            <span class="pool-total" id="poolTotal">0 dados</span>
+          </div>
+          <div class="pool-list" id="poolList"></div>
+          <div class="pool-add">
+            <select class="field" id="addDieType">
+              <option value="6">d6</option>
+              <option value="8" selected>d8</option>
+              <option value="12">d12</option>
+            </select>
+            <input type="number" class="field small" id="addDieCount" value="1" min="1" max="20" aria-label="Cantidad" />
+            <button class="btn" id="addDieBtn" type="button">Añadir</button>
+          </div>
+          <div class="pool-mods">
+            <label>Boost/Burn neto manual: <input type="number" class="field small" id="boostCount" value="0" min="-20" max="20" step="1" aria-label="Boosts netos (positivo = boost, negativo = burn)" /></label>
+            <p class="note-line"><small>Boost = ▲ (sube escalón), Burn = ▼ (baja escalón). Se anulan: pon neto. +2 = dos boosts; −1 = un burn.</small></p>
+          </div>
+          <button class="btn primary" id="transformBtn" type="button">Transformar pool</button>
         </div>
-        <div class="pool-list" id="poolList"></div>
-        <div class="pool-add">
-          <select class="field" id="addDieType">
-            <option value="6">d6</option>
-            <option value="8" selected>d8</option>
-            <option value="12">d12</option>
-          </select>
-          <input type="number" class="field small" id="addDieCount" value="1" min="1" max="20" aria-label="Cantidad" />
-          <button class="btn" id="addDieBtn" type="button">Añadir</button>
+
+        <div class="pool-result" id="poolResult" hidden>
+          <h3>Reserva transformada</h3>
+          <div class="transformed-list" id="transformedList"></div>
+          <div class="net-display" id="netDisplay"></div>
+          <button class="btn primary" id="rollPoolBtn" type="button">Tirar reserva</button>
         </div>
+
+        <div class="dice-roll-result" id="diceRollResult" hidden>
+          <div class="roll-header">
+            <div class="exitos"><strong id="rollOkN">0</strong><span id="rollOkT">éxitos</span></div>
+            <button class="btn small" id="rerollBtn" type="button" aria-label="Tirar de nuevo">Tirar de nuevo</button>
+          </div>
+          <div class="dice-out" id="diceRollOut"></div>
+          <p class="note-line" id="rollDetail"></p>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-mods-antipersona"></div>
+      <div class="tab-panel" id="tab-mods-antitanque"></div>
+      <div class="tab-panel" id="tab-mods-asalto"></div>
+      <div class="tab-panel" id="tab-mods-deteccion"></div>
+      <div class="tab-panel" id="tab-mods-moral"></div>
+      <div class="tab-panel" id="tab-mods-manual">
         <div class="pool-mods">
-          <label>Boosts netos (▲): <input type="number" class="field small" id="boostCount" value="0" min="-20" max="20" step="1" aria-label="Boosts netos (positivo = boost, negativo = burn)" /></label>
-          <p class="note-line"><small>Boost = ▲ (sube escalón), Burn = ▼ (baja escalón). Se anulan entre sí: pon el neto. Ej: +2 = dos boosts; −1 = un burn.</small></p>
+          <label>Boost/Burn neto manual: <input type="number" class="field small" id="manualBoostCount" value="0" min="-20" max="20" step="1" /></label>
+          <p class="note-line"><small>Introduce el neto final tras revisar las pestañas de modificadores. Se suma al neto calculado automáticamente.</small></p>
         </div>
-        <button class="btn primary" id="transformBtn" type="button">Transformar pool</button>
-      </div>
-
-      <div class="pool-result" id="poolResult" hidden>
-        <h3>Reserva transformada</h3>
-        <div class="transformed-list" id="transformedList"></div>
-        <button class="btn primary" id="rollPoolBtn" type="button">Tirar reserva</button>
-      </div>
-
-      <div class="dice-roll-result" id="diceRollResult" hidden>
-        <div class="roll-header">
-          <div class="exitos"><strong id="rollOkN">0</strong><span id="rollOkT">éxitos</span></div>
-          <button class="btn small" id="rerollBtn" type="button" aria-label="Tirar de nuevo">Tirar de nuevo</button>
-        </div>
-        <div class="dice-out" id="diceRollOut"></div>
-        <p class="note-line" id="rollDetail"></p>
       </div>
     </div>
 
@@ -689,12 +848,120 @@ function viewMesa() {
 
   wrap.querySelector('#back').addEventListener('click', () => go('mas'));
 
+  // ---- Tabs ----
+  const tabBtns = wrap.querySelectorAll('.tab-btn');
+  const tabPanels = wrap.querySelectorAll('.tab-panel');
+  let activeTab = 'pool';
+  let manualBoost = 0;
+
+  function switchTab(tabId) {
+    activeTab = tabId;
+    tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+    tabPanels.forEach(p => p.classList.toggle('active', p.id === 'tab-' + tabId));
+    if (tabId.startsWith('mods-') && !wrap.querySelector('#tab-' + tabId).innerHTML) {
+      renderModifierTab(tabId.replace('mods-', ''));
+    }
+  }
+  tabBtns.forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+  // ---- Modificadores ----
+  let selectedMods = {}; // { modId: count }
+
+  function renderModifierTab(key) {
+    const table = MODIFIER_TABLES[key];
+    if (!table) return;
+    const panel = wrap.querySelector('#tab-' + 'mods-' + key);
+    let html = `<h3>${table.titulo}</h3><p class="note-line"><small>${table.nota}</small></p>`;
+    for (const cat of table.categorias) {
+      html += `<div class="mod-category"><h4>${cat.nombre}</h4><div class="mod-list">`;
+      for (const mod of cat.mods) {
+        const count = selectedMods[mod.id] || 0;
+        const net = mod.boost - mod.burn;
+        const sign = net >= 0 ? '+' : '';
+        html += `
+          <div class="mod-item">
+            <label class="mod-label">${VFV.escapeHtml(mod.label)} <span class="mod-net">(${sign}${net})</span></label>
+            <div class="mod-counter">
+              <button type="button" class="btn small" data-mod="${mod.id}" data-delta="-1" ${count <= 0 ? 'disabled' : ''}>−</button>
+              <output class="mod-count" id="modcount-${mod.id}">${count}</output>
+              <button type="button" class="btn small" data-mod="${mod.id}" data-delta="1">+</button>
+            </div>
+          </div>`;
+      }
+      html += `</div></div>`;
+    }
+    html += `<div class="mod-summary" id="modSummary-${key}"></div>`;
+    panel.innerHTML = html;
+    panel.querySelectorAll('.mod-counter button').forEach(b => {
+      b.addEventListener('click', () => {
+        const id = b.dataset.mod;
+        const delta = +b.dataset.delta;
+        selectedMods[id] = Math.max(0, (selectedMods[id] || 0) + delta);
+        updateModCounters(key);
+        updateNetDisplay();
+      });
+    });
+    updateModCounters(key);
+  }
+
+  function updateModCounters(key) {
+    const table = MODIFIER_TABLES[key];
+    if (!table) return;
+    let totalBoost = 0, totalBurn = 0;
+    for (const cat of table.categorias) {
+      for (const mod of cat.mods) {
+        const count = selectedMods[mod.id] || 0;
+        const el = wrap.querySelector('#modcount-' + mod.id);
+        if (el) el.textContent = count;
+        totalBoost += mod.boost * count;
+        totalBurn += mod.burn * count;
+      }
+    }
+    const net = totalBoost - totalBurn;
+    const summary = wrap.querySelector('#modSummary-' + key);
+    if (summary) {
+      summary.innerHTML = `<strong>Total: ${totalBoost} boost / ${totalBurn} burn</strong> → Neto: ${net >= 0 ? '+' : ''}${net}`;
+    }
+    updateNetDisplay();
+  }
+
+  function updateNetDisplay() {
+    let totalBoost = 0, totalBurn = 0;
+    for (const key of Object.keys(MODIFIER_TABLES)) {
+      const table = MODIFIER_TABLES[key];
+      for (const cat of table.categorias) {
+        for (const mod of cat.mods) {
+          const count = selectedMods[mod.id] || 0;
+          totalBoost += mod.boost * count;
+          totalBurn += mod.burn * count;
+        }
+      }
+    }
+    manualBoost = +(wrap.querySelector('#manualBoostCount')?.value || 0);
+    const autoNet = totalBoost - totalBurn;
+    const finalNet = autoNet + manualBoost;
+
+    const display = wrap.querySelector('#netDisplay');
+    if (display) {
+      display.innerHTML = `
+        <div class="net-breakdown">
+          <span>Auto (tablas): <strong>${totalBoost}▲ / ${totalBurn}▼</strong> = ${autoNet >= 0 ? '+' : ''}${autoNet}</span>
+          <span>Manual: <strong>${manualBoost >= 0 ? '+' : ''}${manualBoost}</strong></span>
+          <span class="final-net">Neto final: <strong>${finalNet >= 0 ? '+' : ''}${finalNet}</strong></span>
+        </div>`;
+    }
+    // Actualizar el input hidden del pool editor
+    const boostInput = wrap.querySelector('#boostCount');
+    if (boostInput) boostInput.value = finalNet;
+    renderTransformed();
+  }
+
   // ---- Pool de dados con boost/burn ----
   const DIE_CHAIN = ['d6-', 'd6', 'd8', 'd12', 'd12+'];
   const DIE_FACES = { 'd6-': 6, 'd6': 6, 'd8': 8, 'd12': 12, 'd12+': 12 };
 
   let pool = []; // [{type: 'd6'|'d8'|'d12', count: n}]
-  let transformedPool = []; // [{type: 'd6-'|'d6'|'d8'|'d12'|'d12+', count: n}]
+  let transformedPool = [];
 
   const poolList = wrap.querySelector('#poolList');
   const poolTotal = wrap.querySelector('#poolTotal');
@@ -747,9 +1014,6 @@ function viewMesa() {
       }
     }
 
-    // Special case: d6- (burned d6) - if it's the last die of its kind, it becomes 2d6 keep worst
-    // For display purposes we keep as d6-; rolling handles it
-
     // Count by type
     const counts = {};
     for (const d of dice) counts[d] = (counts[d] || 0) + 1;
@@ -757,7 +1021,7 @@ function viewMesa() {
   }
 
   function renderTransformed() {
-    const net = +wrap.querySelector('#boostCount').value || 0;
+    const net = +(wrap.querySelector('#boostCount')?.value || 0);
     transformedPool = applyBoostBurn(pool, net);
 
     const tList = wrap.querySelector('#transformedList');
@@ -768,7 +1032,8 @@ function viewMesa() {
     tList.innerHTML = transformedPool.map((d) => {
       const label = d.type === 'd12+' ? 'd12+' : d.type === 'd6-' ? 'd6−' : d.type;
       const faces = DIE_FACES[d.type];
-      return `<div class="transformed-item"><span class="die-type">${d.count}×${label}</span><span class="die-faces">(${faces} caras)</span></div>`;
+      const isSpecial = d.type === 'd12+' || d.type === 'd6-';
+      return `<div class="transformed-item${isSpecial ? ' special' : ''}"><span class="die-type">${d.count}×${label}</span><span class="die-faces">(${faces} caras${d.type === 'd6-' ? ', 2d6 queda peor' : d.type === 'd12+' ? ', d12+d6 queda mejor' : ''})</span></div>`;
     }).join('');
   }
 
@@ -811,7 +1076,7 @@ function viewMesa() {
     wrap.querySelector('#rollOkN').textContent = succ;
     wrap.querySelector('#rollOkT').textContent = `${succ === 1 ? 'éxito' : 'éxitos'}`;
     wrap.querySelector('#diceRollOut').innerHTML = results.map((r, i) => 
-      `<span class="die ${r.value >= 5 ? 'ok' : ''}" style="animation-delay:${i * 20}ms">${r.value}</span>`
+      `<span class="die ${r.value >= 5 ? 'ok' : ''} ${r.type === 'd12+' ? 'd12p' : r.type === 'd6-' ? 'd6m' : ''}" style="animation-delay:${i * 20}ms">${r.value}</span>`
     ).join('');
     wrap.querySelector('#rollDetail').innerHTML = 'Detalle: ' + detailParts.join(' · ');
   }
@@ -827,13 +1092,17 @@ function viewMesa() {
     renderTransformed();
   });
 
-  wrap.querySelector('#boostCount').addEventListener('input', renderTransformed);
+  wrap.querySelector('#boostCount').addEventListener('input', () => {
+    renderTransformed();
+    updateNetDisplay();
+  });
   wrap.querySelector('#transformBtn').addEventListener('click', () => {
     wrap.querySelector('#poolResult').hidden = false;
     renderTransformed();
   });
   wrap.querySelector('#rollPoolBtn').addEventListener('click', rollTransformedPool);
   wrap.querySelector('#rerollBtn').addEventListener('click', rollTransformedPool);
+  wrap.querySelector('#manualBoostCount')?.addEventListener('input', updateNetDisplay);
 
   renderPool();
 

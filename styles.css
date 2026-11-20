@@ -560,3 +560,39 @@ table.plain th, table.plain td { border-bottom: 1px solid var(--filete); padding
 .die.d12p::after { content: '+'; position: absolute; top: -4px; right: -4px; font-size: 10px; font-weight: 800; color: var(--sube); }
 .die.d6m { position: relative; }
 .die.d6m::after { content: '−'; position: absolute; top: -4px; right: -4px; font-size: 10px; font-weight: 800; color: var(--baja); }
+
+/* ---------- pestañas herramienta dados ---------- */
+.dice-tool-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; border-bottom: 2px solid var(--filete); padding-bottom: 4px; }
+.tab-btn { padding: 8px 12px; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--lapiz); border-radius: 6px 6px 0 0; position: relative; bottom: -2px; transition: color .15s, background .15s; }
+.tab-btn:hover { color: var(--tinta); background: var(--papel-2); }
+.tab-btn.active { color: var(--tinta); background: var(--papel); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeIn .15s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ---------- selectores de modificadores ---------- */
+.mod-category { margin-bottom: 16px; }
+.mod-category h4 { font-size: 13px; font-weight: 700; color: var(--tinta); margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--filete); }
+.mod-list { display: flex; flex-direction: column; gap: 6px; }
+.mod-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: var(--papel-2); border-radius: 6px; gap: 12px; }
+.mod-label { font-size: 13px; color: var(--tinta); flex: 1; min-width: 0; }
+.mod-net { font-size: 11px; color: var(--lapiz); font-weight: 500; }
+.mod-net:contains('+') { color: var(--sube); }
+.mod-net:contains('−') { color: var(--baja); }
+.mod-counter { display: flex; align-items: center; gap: 6px; }
+.mod-counter .btn.small { min-width: 32px; min-height: 32px; padding: 2px 8px; font-size: 14px; }
+.mod-counter .mod-count { min-width: 28px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--tinta); }
+.mod-summary { margin-top: 12px; padding: 10px 12px; background: var(--papel-2); border-radius: 6px; font-size: 13px; color: var(--lapiz); }
+.mod-summary strong { color: var(--tinta); }
+
+/* ---------- net display ---------- */
+.net-breakdown { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 10px 12px; background: var(--papel-2); border-radius: 6px; margin-top: 8px; font-size: 13px; }
+.net-breakdown span { display: flex; align-items: center; gap: 6px; }
+.final-net { font-weight: 800; color: var(--tinta); border-left: 2px solid var(--tinta); padding-left: 10px; margin-left: 4px; }
+
+/* ---------- transformed pool special ---------- */
+.transformed-item.special { border: 1px solid var(--tinta); }
+.transformed-item.special .die-faces { color: var(--tinta); font-weight: 600; }
+
+/* ---------- manual boost input ---------- */
+#manualBoostCount { width: 70px; }
