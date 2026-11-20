@@ -705,42 +705,6 @@ const MODIFIER_TABLES = {
     ],
     nota: 'FAQ 2025: infantería que asalta NO puede echarse cuerpo a tierra ante reactivo. Shaken = -2, Pinned = -4 (se separan). Empate = gana defensor. Panicked en asalto = todas las figuras se retiran como bajas.'
   },
-  deteccion: {
-    titulo: 'Detección (Spotting) — Base 3L (columna roja)',
-    categorias: [
-      {
-        nombre: 'Objetivo',
-        mods: [
-          { id: 'det_obj_equipo_pequeno', label: 'Equipo ≤2 fig / Recon', boost: 0, burn: 1 },
-          { id: 'det_obj_camuflada', label: 'Unidad camuflada', boost: 0, burn: 3 },
-          { id: 'det_obj_fuego', label: 'Tiene marcador de Fuego', boost: 2, burn: 0 },
-          { id: 'det_obj_vehiculo', label: 'Es un vehículo', boost: 2, burn: 0 },
-        ]
-      },
-      {
-        nombre: 'Observador',
-        mods: [
-          { id: 'det_obs_vehiculo', label: 'Vehículo (salvo descubierto)', boost: 0, burn: 1 },
-        ]
-      },
-      {
-        nombre: 'Clima (el peor)',
-        mods: [
-          { id: 'det_clima_lluvia', label: 'Lluvia / Cielo cubierto', boost: 0, burn: 1 },
-          { id: 'det_clima_niebla', label: 'Niebla / Oscuridad', boost: 0, burn: 2 },
-        ]
-      },
-      {
-        nombre: 'Terreno',
-        mods: [
-          { id: 'det_ter_obstaculo', label: 'Cada obstáculo lineal cruzado', boost: 0, burn: 1 },
-          { id: 'det_ter_cob_ligera', label: 'Cobertura ligera, por S', boost: 0, burn: 1 },
-          { id: 'det_ter_cob_pesada', label: 'Cobertura pesada, por S', boost: 0, burn: 2 },
-        ]
-      }
-    ],
-    nota: 'Acumulativos. Mínimo M. >3L = toda la mesa. Quien observa y toca obstáculo lineal NO sufre su penalización. Recon y "equipo ≤2 fig" no se acumulan (solo -1). FAQ 2025: penalización -1 solo si <3 fig Y sin marcador Fuego.'
-  },
   moral: {
     titulo: 'Chequeo de Moral — Éxito 5+',
     categorias: [
