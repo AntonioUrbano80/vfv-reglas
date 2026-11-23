@@ -1,0 +1,73 @@
+/* Extensión de app/styles.css: misma tipografía, paleta y componentes día/noche. */
+.oob-demo .builder-main { max-width: 1180px; }
+body[data-view="ejercito"] .main { max-width: 1180px; }
+.oob-demo .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.oob-demo .eyebrow { color: var(--lapiz); font-size: 11px; font-weight: 700; letter-spacing: .12em; margin: 4px 0 12px; }
+.oob-demo .page-heading > .pill { white-space: nowrap; margin-top: 5px; }
+.oob-demo h2.sec-head { font-size: 26px; font-stretch: 75%; line-height: 1.1; margin: 0 0 10px; display: flex; gap: 12px; align-items: baseline; justify-content: space-between; }
+.oob-demo .sec-head .n { font-size: 13px; color: var(--lapiz); font-weight: 500; }
+.oob-demo .setup-card { border-top: 3px solid var(--oliva); margin-top: 8px; }
+.oob-demo .army-field { flex: 1; min-width: 0; }
+.oob-demo .army-field select.field { width: 100%; }
+.oob-demo .toolbar-row { margin-bottom: 0; }
+.oob-demo .budget-bar { display: flex; gap: 12px 28px; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--filete); padding-top: 14px; margin-top: 16px; font-size: 14px; }
+.oob-demo .budget-bar b { margin-left: 6px; font-size: 22px; font-variant-numeric: tabular-nums; }
+.oob-demo .budget-bar .pill { margin-left: auto; }
+.oob-demo .budget-remaining.ok { color: var(--sube); }
+.oob-demo .budget-remaining.near { color: var(--oliva); }
+.oob-demo .budget-remaining.over { color: var(--baja); }
+.oob-demo .builder-section { margin-top: 34px; scroll-margin-top: 100px; }
+.oob-demo .section-intro { color: var(--lapiz); margin: 0 0 16px; font-size: 14px; max-width: 80ch; }
+.oob-demo .core-grid, .oob-demo .support-grid, .oob-demo .vehicle-grid, .oob-demo .reinforcement-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+.oob-demo .unit-card, .oob-demo .vehicle-card { min-width: 0; }
+.oob-demo .unit-card h3, .oob-demo .vehicle-card h3 { font-size: 18px; font-stretch: 78%; margin: 0 0 10px; line-height: 1.2; }
+.oob-demo .team-name { margin: 16px 0 6px; color: var(--lapiz); font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: .025em; }
+.oob-demo .slots-grid { display: grid; gap: 5px; }
+.oob-demo .slot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; border: 1px solid var(--filete); border-radius: 3px; padding: 6px 8px; font-size: 12px; }
+.oob-demo .slot.filled { background: var(--papel); }
+.oob-demo .slot.grey { background: var(--papel-2); border-style: dashed; color: var(--lapiz); }
+.oob-demo .figure-status { font-size: 10px; font-weight: 650; flex-shrink: 0; }
+.oob-demo .slot.filled .figure-status { color: var(--oliva); }
+.oob-demo .unit-card.selected, .oob-demo .vehicle-card.selected { border-color: var(--oliva); box-shadow: inset 3px 0 var(--oliva); }
+.oob-demo .unit-card .unit-card { margin-top: 16px; border: 0; border-top: 1px solid var(--filete); border-radius: 0; padding: 16px 0 0; background: transparent; }
+.oob-demo .unit-card .unit-card > h3 { font-size: 14px; color: var(--lapiz); }
+.oob-demo .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.oob-demo .btn { max-width: 100%; font-size: 13px; min-height: 40px; padding: 8px 10px; }
+.oob-demo .purchase-controls { margin: 0 0 14px; }
+.oob-demo .purchase-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.oob-demo .purchase-heading .btn { font-size: 11px; }
+.oob-demo .purchase-heading .pill { white-space: nowrap; }
+.oob-demo .assignment-row { margin-top: 12px; min-width: 0; }
+.oob-demo .assignment-row label { font-size: 13px; }
+.oob-demo .assignment-row select.field { width: 100%; min-width: 0; max-width: 100%; font-size: 13px; }
+.oob-demo .empty-bank { border: 1px dashed var(--filete); border-radius: 6px; padding: 20px; font-size: 14px; color: var(--lapiz); margin: 0; }
+.oob-demo .vehicle-stats { font-size: 13px; color: var(--lapiz); line-height: 1.6; }
+.oob-demo .cost { color: var(--oliva); white-space: nowrap; }
+.oob-demo .vehicle-option { border-top: 1px solid var(--filete); margin-top: 16px; padding-top: 12px; font-size: 13px; }
+.oob-demo .vehicle-option p { margin: 0 0 8px; }
+.oob-demo .summary { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 3px solid var(--oliva); }
+.oob-demo .summary > div { display: flex; flex-direction: column; gap: 3px; }
+.oob-demo .summary span { color: var(--lapiz); font-size: 12px; }
+.oob-demo .summary b { font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.oob-demo .list-actions { margin-top: 18px; }
+.oob-demo .list-detail { margin-top: 16px; }
+.oob-demo .list-detail summary { cursor: pointer; font-size: 14px; font-weight: 650; }
+.oob-demo #listOutput { white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.65 "Archivo", sans-serif; margin: 16px 0 0; }
+.oob-demo .validation-errors { display: none; }
+.oob-demo .validation-errors.show { display: block; }
+.oob-demo .builder-footer { margin-top: 34px; border-top: 1px solid var(--filete); padding-top: 20px; font-size: 13px; color: var(--lapiz); }
+@media (min-width: 680px) {
+  .oob-demo .core-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .oob-demo .support-grid, .oob-demo .vehicle-grid, .oob-demo .reinforcement-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .oob-demo .summary { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+@media (min-width: 1200px) {
+  .oob-demo .vehicle-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) {
+  .oob-demo .page-heading { display: block; }
+  .oob-demo .page-heading > .pill { display: none; }
+  .oob-demo .sec-head .n { max-width: 45%; text-align: right; }
+  .oob-demo .budget-bar { gap: 10px 14px; }
+  .oob-demo .budget-bar .pill { margin-left: 0; }
+}

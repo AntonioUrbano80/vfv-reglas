@@ -28,7 +28,7 @@ const state = {
 };
 
 // Vistas que cuelgan de la pestaña «Más» de la barra inferior.
-const GRUPO_MAS = ['mas', 'secuencia', 'mesa', 'gce', 'docs'];
+const GRUPO_MAS = ['mas', 'secuencia', 'mesa', 'gce', 'docs', 'ejercito'];
 const VISTAS = ['buscar', 'temas', 'faq', 'tablas', ...GRUPO_MAS];
 
 // Abreviatura de cada libro en los sellos de página.
@@ -152,6 +152,7 @@ function render() {
     gce: viewGce,
     docs: viewDocs,
     mas: viewMas,
+    ejercito: () => window.VFVBuilder.mount(main),
   }[state.view] || viewBuscar;
   fn();
 }
@@ -1453,6 +1454,7 @@ function viewDocs() {
 function viewMas() {
   const local = !!window.VFV_LOCAL;
   const items = [
+    ['ejercito', 'bandera', 'Constructor de listas', 'Infantería británica · Francia 1940, con refuerzos de asignación manual'],
     ['mesa', 'dado', 'Herramientas', 'Dados, eventos aleatorios y control de unidades'],
     ['secuencia', 'turno', 'Turno paso a paso', 'Lista de comprobación de cada fase'],
     ['gce', 'bandera', 'Suplemento GCE', `${GCE.facciones.length} facciones de la Guerra Civil Española`],
