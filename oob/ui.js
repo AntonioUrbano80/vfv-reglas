@@ -30,7 +30,7 @@
         </section>
         <section id="apoyos" class="builder-section">
           <h2 class="sec-head">Apoyos orgánicos</h2>
-          <p class="section-intro">Al añadir un apoyo, sus huecos grises aparecen entre los destinos disponibles. El francotirador cuesta 1♦: dos figuras de la fuerza o dos de refuerzo normal sin colocar.</p>
+          <p class="section-intro">Al añadir un apoyo, sus huecos grises aparecen entre los destinos disponibles. El francotirador cuesta 1♦: elige dos figuras que retirar de la fuerza o paga con dos de refuerzo normal sin colocar.</p>
           <div id="fireSupportList" class="support-grid"></div>
         </section>
         <section id="vehiculos" class="builder-section">
@@ -56,7 +56,7 @@
           <p id="saveStatus" class="note-line" role="status"></p>
           <details class="card list-detail"><summary>Ver desglose por equipos y figuras</summary><pre id="listOutput"></pre></details>
         </section>
-        <footer class="builder-footer"><span class="pill">Infantería británica · Francia 1940</span><p>Destinos de refuerzos manuales; retiradas para SMG y ♦ de la fuerza automáticas. No incluye otras campañas ni transportes asignados.</p></footer>
+        <footer class="builder-footer"><span class="pill">Infantería británica · Francia 1940</span><p>Destinos de refuerzos y bajas para ♦ elegidos manualmente. Retiradas para SMG automáticas. No incluye otras campañas ni transportes asignados.</p></footer>
   `;
     host.appendChild(container);
     const E = window.OOBDemo, D = E.data, KEY = options.demo ? 'vfv-oob-demo-v1' : 'vfv-oob-list-v2';
@@ -110,12 +110,23 @@
         lines.push(v.name + ' — ' + v.cost + '★ · ' + E.weapons(v, opts).join(', '));
         v.options.filter(o => opts.includes(o.id)).forEach(o => lines.push('  ' + o.name + ' +' + o.cost + '★'));
       });
-      if (t.diamonds) lines.push('1♦ pagado con 2 figuras de ' + (state.sniperPayment === 'force' ? 'la fuerza.' : 'refuerzo normal.'));
+      if (t.diamonds) lines.push(`Pago de 1♦: ${t.diamondPaid}/2 figuras de ` + (state.sniperPayment === 'force' ? 'la fuerza retiradas.' : 'refuerzo normal reservadas.'));
       lines.push(`Refuerzos: ${state.purchases.length}/4 compras; ${t.reinforcements} presentes; ${t.unused} sin colocar (no cuentan en la fuerza).`,
-        'Destinos de refuerzos elegidos manualmente. Las retiradas para SMG y ♦ de la fuerza son automáticas.',
+        'Destinos de refuerzos y bajas para ♦ elegidos manualmente. Las retiradas para SMG son automáticas.',
         'Catálogo disponible: infantería británica y vehículos de Francia 1940.');
       if (t.errors.length) lines.push(...t.errors);
       return lines.join('\n');
+    }
+    function diamondHTML(t) {
+      const active = !!state.support.fs_sniper;
+      const method = state.sniperPayment === 'force' ? 'retiradas de la fuerza' : 'reservadas de refuerzos';
+      const paid = active ? `<p class="diamond-status" role="status">Pago de 1♦: <b>${t.diamondPaid}/2 figuras ${method}</b>.</p>` :
+        '<p class="note-line">Para pagar 1♦, elige dos fusileros distintos. Se retirarán al añadir el francotirador. Las bajas para SMG no sirven para pagar el rombo.</p>';
+      if (active && state.sniperPayment === 'reinforcement') return `<div class="diamond-payment" id="diamondPayment">${paid}</div>`;
+      return `<div class="diamond-payment" id="diamondPayment">${paid}` + [0, 1].map(index =>
+        `<div class="assignment-row"><label class="lbl" for="sniper-donor-${index}">Figura ${index + 1} que retirar por ♦</label><select class="field" id="sniper-donor-${index}" data-sniper-donor="${index}" ${active ? 'disabled' : ''}><option value="">Elige una figura</option>` +
+        t.donorCandidates.map((f, i) => `<option value="${esc(f.key)}" ${state.sniperDonors[index] === f.key ? 'selected' : ''} ${state.sniperDonors[1 - index] === f.key ? 'disabled' : ''}>${esc(f.unit + ' · ' + f.team + ' · fusilero ' + (i + 1))}</option>`).join('') + '</select></div>').join('') +
+        (active ? '<p class="note-line">Las dos bajas se muestran también en sus equipos. Salen dos figuras y entra un equipo de francotirador de dos: el total puede quedarse igual. Quita el francotirador para cambiar el pago.</p>' : '') + '</div>';
     }
     function render() {
       const t = E.calculate(state), rem = state.budget - t.stars;
@@ -131,13 +142,13 @@
       $('fireSupportList').innerHTML = D.FIRE_SUPPORT.filter(f => f.type !== 'modifier').map(f => {
         const count = state.support[f.id] || 0;
         let controls = f.cost === 'diamond'
-          ? button(count ? 'Quitar francotirador' : 'Añadir ♦: retirar 2 fusileros', 'sniper', 'force') +
+          ? button(count ? 'Quitar francotirador' : 'Añadir francotirador: pagar con las 2 bajas elegidas', 'sniper', 'force') +
             (!count ? button('Añadir ♦: usar 2 figuras de refuerzo normal', 'sniper', 'reinforcement') : '')
           : button('+ Añadir', 'support', f.id, 1) + button('− Quitar', 'support', f.id, -1);
         if (f.hasOptionalModule) controls += button(state.motoModule ? 'Quitar 2º vehículo' : 'Añadir 2º vehículo (+1★)', 'moto') +
           button(state.brenSwap ? 'Restaurar Bren (+1★)' : 'Bren → fusilero (−1★)', 'bren');
         const units = t.units.filter(u => u.id.startsWith(f.id + ':'));
-        return `<article class="unit-card card ${count ? 'selected' : ''}"><h3>${esc(f.name)}</h3><p class="note-line">${f.cost === 'diamond' ? '1♦ = 2 figuras' : f.cost + '★'} · ${count}/${f.limit}${!E.available(f) ? ' · No disponible en Francia 1940' : ''}</p><div class="controls">${controls}</div>${units.map(unitHTML).join('')}</article>`;
+        return `<article class="unit-card card ${count ? 'selected' : ''}"><h3>${esc(f.name)}</h3><p class="note-line">${f.cost === 'diamond' ? '1♦ = 2 figuras' : f.cost + '★'} · ${count}/${f.limit}${!E.available(f) ? ' · No disponible en Francia 1940' : ''}</p>${f.cost === 'diamond' ? diamondHTML(t) : ''}<div class="controls">${controls}</div>${units.map(unitHTML).join('')}</article>`;
       }).join('');
       $('equipmentList').innerHTML = `<p>Retiradas para SMG: ${state.removed}/2 · conversiones: ${state.smg}/${state.removed * 2}</p><div class="controls">` +
         button('Retirar fusilero', 'removed', '', 1) + button('Devolver fusilero', 'removed', '', -1) +
@@ -168,6 +179,12 @@
       persist(); render();
     });
     container.addEventListener('change', event => {
+      const donor = event.target.closest('select[data-sniper-donor]');
+      if (donor) {
+        const focus = donor.id;
+        state = E.change(state, 'sniperDonor', donor.dataset.sniperDonor, donor.value);
+        persist(); render(); $(focus)?.focus({ preventScroll: true }); return;
+      }
       const select = event.target.closest('select[data-assignment]');
       if (!select) return;
       const selectId = select.id;

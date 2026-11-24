@@ -40,6 +40,8 @@ Puedes sustituir o eliminar cada copia local. Sustituir el PDF reemplaza tambié
 
 **Más → Constructor de listas** permite preparar la infantería británica de Francia 1940. Los destinos de cada refuerzo se eligen manualmente; la lista se guarda en este navegador y puede exportarse como texto. El constructor funciona también sin conexión. Esta primera lista no incluye otras campañas ni gestión de transportes asignados.
 
+El francotirador cuesta **1♦ = dos figuras**. Selecciona dos fusileros distintos que retirar antes de añadirlo, o reserva dos figuras sin colocar de refuerzo normal. El panel muestra el pago **2/2**, y las bajas se señalan en sus equipos. Esas figuras no pueden volver a utilizarse mientras el francotirador siga incluido.
+
 El botón **Actualizar aplicación** aparece cuando hay una nueva versión lista. Actualizar la aplicación no borra IndexedDB. El modo sin conexión guarda únicamente los recursos públicos de la app; los PDF y OCR personales se guardan por separado en el dispositivo.
 
 El lector PDF.js está incluido, sin CDN. No hay analítica ni servicios de subida. La primera carga y las actualizaciones descargan archivos públicos del alojamiento. Las búsquedas externas solo se abren cuando pulsas su enlace, y envían la consulta al buscador.

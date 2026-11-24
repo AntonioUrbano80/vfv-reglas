@@ -5,7 +5,7 @@
   const available = item => (!item.fromYear || item.fromYear <= 1940) &&
     (!item.avail || item.avail.some(x => x === 'F40' || x === 'Todos'));
   const purchasable = v => available(v) && v.cost > 0;
-  const fresh = () => ({ version: 2, budget: 15, purchases: [], assignments: {}, sniperReserve: [], support: {},
+  const fresh = () => ({ version: 3, budget: 15, purchases: [], assignments: {}, sniperReserve: [], sniperDonors: ['', ''], support: {},
     motoModule: false, brenSwap: false, elite: false, removed: 0, smg: 0,
     sniperPayment: 'force', vehicles: {} });
   const rifle = f => ['rifleman', 'recce_rifleman'].includes(f.type);
@@ -14,11 +14,22 @@
     : slot.type !== 'anti_tank_rifle' && slot.reinforcementOnly === 'rifle_reinforcement');
 
   function migrate(saved) {
-    if (!saved || saved.version !== 1) return saved;
-    const next = { ...saved, version: 2, assignments: {}, sniperReserve: [] };
-    if (next.support?.fs_sniper && next.sniperPayment === 'reinforcement' && Array.isArray(next.purchases)) {
-      const p = next.purchases.indexOf('rifle_reinforcement');
-      if (p >= 0) next.sniperReserve = [`${p}:0`, `${p}:1`];
+    if (!saved || ![1, 2].includes(saved.version)) return saved;
+    const next = { ...saved, version: 3, sniperDonors: ['', ''] };
+    if (saved.version === 1) {
+      next.assignments = {}; next.sniperReserve = [];
+      if (next.support?.fs_sniper && next.sniperPayment === 'reinforcement' && Array.isArray(next.purchases)) {
+        const p = next.purchases.indexOf('rifle_reinforcement');
+        if (p >= 0) next.sniperReserve = [`${p}:0`, `${p}:1`];
+      }
+    }
+    if (next.support?.fs_sniper && next.sniperPayment === 'force') {
+      // Conserva las dos bajas que calculaba la versión anterior, sin inventar un pago nuevo.
+      const without = { ...next, support: { ...next.support, fs_sniper: 0 } };
+      if (validate(without).some(e => !e.startsWith('Presupuesto excedido:'))) return next;
+      next.sniperDonors = calculate(without).units.flatMap(u => u.figures)
+        .filter(f => f.present && rifle(f)).sort((a, b) => Number(b.reinforcement) - Number(a.reinforcement))
+        .reverse().slice(0, 2).map(f => f.key);
     }
     return next;
   }
@@ -75,13 +86,23 @@
       f.status = 'placed'; f.target = target.key;
     }
     // No se retiran jefes, armas especiales ni figuras del propio francotirador.
-    const removable = figures.filter(f => f.present && rifle(f) && !f.key.startsWith('fs_sniper:'))
+    const forcePayment = sniper && s.sniperPayment === 'force';
+    const removable = figures.filter(f => f.present && rifle(f) && !f.key.startsWith('fs_sniper:') &&
+      !(forcePayment && s.sniperDonors.includes(f.key)))
       .sort((a, b) => Number(b.reinforcement) - Number(a.reinforcement));
-    const removeCount = s.removed + (sniper && s.sniperPayment === 'force' ? 2 : 0);
+    const removeCount = s.removed;
     if (removable.length < removeCount) errors.push('No hay suficientes fusileros para pagar las retiradas.');
     removable.slice().reverse().slice(0, removeCount).forEach((f, i) => {
-      f.present = false; f.removedFor = i < s.removed ? 'SMG' : '♦';
+      f.present = false; f.removedFor = 'SMG';
     });
+    const donorCandidates = figures.filter(f => f.present && rifle(f) && !f.key.startsWith('fs_sniper:'));
+    if (forcePayment) {
+      const donors = donorCandidates.filter(f => s.sniperDonors.includes(f.key));
+      if (donors.length !== 2) errors.push('Para añadir el francotirador debes elegir y retirar dos figuras distintas de la fuerza.');
+      donors.forEach(f => { f.present = false; f.removedFor = '♦'; });
+    }
+    const diamondPaid = figures.filter(f => f.removedFor === '♦').length + pool.filter(f => f.status === 'payment').length;
+    if (sniper && diamondPaid !== 2) errors.push('El coste de 1♦ no está pagado: requiere exactamente dos figuras.');
     const convertible = figures.filter(f => f.present && (rifle(f) || f.type === 'team_leader_rifle' || f.type === 'recce_leader'));
     if (s.smg > s.removed * 2 || s.smg > convertible.length) errors.push('Las conversiones SMG exceden las permitidas.');
     convertible.slice(0, s.smg).forEach(f => { f.smg = true; });
@@ -92,7 +113,7 @@
     });
     if (stars > s.budget) errors.push(`Presupuesto excedido: ${stars}★ / ${s.budget}★.`);
     const active = figures.filter(f => f.present);
-    return { stars, diamonds: sniper ? 1 : 0, minis: active.length, vehicles,
+    return { stars, diamonds: sniper ? 1 : 0, diamondPaid, donorCandidates, minis: active.length, vehicles,
       core: active.filter(f => !f.support).length, fire: active.filter(f => f.support).length,
       reinforcements: active.filter(f => f.reinforcement).length,
       totalGrey: slots.length, usedGrey: slots.filter(f => f.present).length,
@@ -101,7 +122,9 @@
   }
 
   function validate(s) {
-    if (!s || s.version !== 2 || !Number.isInteger(s.budget) || s.budget < 0 || s.budget > 50 ||
+    if (!s || s.version !== 3 || !Number.isInteger(s.budget) || s.budget < 0 || s.budget > 50 ||
+        !Array.isArray(s.sniperDonors) || s.sniperDonors.length !== 2 || s.sniperDonors.some(v => typeof v !== 'string') ||
+        new Set(s.sniperDonors.filter(Boolean)).size !== s.sniperDonors.filter(Boolean).length ||
         !s.assignments || typeof s.assignments !== 'object' || Array.isArray(s.assignments) ||
         Object.values(s.assignments).some(v => typeof v !== 'string') ||
         !Array.isArray(s.sniperReserve) || s.sniperReserve.some(v => typeof v !== 'string') ||
@@ -151,6 +174,13 @@
         const figure = calculate(s).pool.find(f => f.key === id);
         if (!figure || figure.status === 'payment' || typeof value !== 'string') return s;
         if (value) next.assignments[id] = value; else delete next.assignments[id];
+        break;
+      }
+      case 'sniperDonor': {
+        const index = Number(id);
+        if (next.support.fs_sniper || ![0, 1].includes(index) || typeof value !== 'string') return s;
+        if (value && !calculate(s).donorCandidates.some(f => f.key === value)) return s;
+        next.sniperDonors[index] = value;
         break;
       }
       case 'support': {
