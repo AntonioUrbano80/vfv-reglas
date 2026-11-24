@@ -40,7 +40,9 @@ Puedes sustituir o eliminar cada copia local. Sustituir el PDF reemplaza tambié
 
 **Más → Constructor de listas** permite preparar la infantería británica de Francia 1940. Los destinos de cada refuerzo se eligen manualmente; la lista se guarda en este navegador y puede exportarse como texto. El constructor funciona también sin conexión. Esta primera lista no incluye otras campañas ni gestión de transportes asignados.
 
-El francotirador cuesta **1♦ = dos figuras**. Selecciona dos fusileros distintos que retirar antes de añadirlo, o reserva dos figuras sin colocar de refuerzo normal. El panel muestra el pago **2/2**, y las bajas se señalan en sus equipos. Esas figuras no pueden volver a utilizarse mientras el francotirador siga incluido.
+Los soldados se representan mediante círculos, con el arma debajo; **C** identifica al comandante y **J** a los jefes. Los círculos grises con **+** son huecos para refuerzos. Una vez comprados, toca esos huecos para colocar las figuras; toca una figura colocada para moverla o devolverla al banco. También se conserva «Asignar por nombre» como alternativa.
+
+El francotirador cuesta **1♦ = dos figuras**. Al elegirlo se abre una ventana: toca dos fusileros distintos para descartarlos, o elige dos figuras de refuerzo normal sin colocar. Solo se recluta al confirmar las dos bajas; cancelar no cambia la lista. El panel muestra el pago **2/2**, y las bajas se señalan en sus equipos. Esas figuras no pueden volver a utilizarse mientras el francotirador siga incluido.
 
 El botón **Actualizar aplicación** aparece cuando hay una nueva versión lista. Actualizar la aplicación no borra IndexedDB. El modo sin conexión guarda únicamente los recursos públicos de la app; los PDF y OCR personales se guardan por separado en el dispositivo.
 

@@ -37,7 +37,7 @@
   function calculate(s) {
     const units = [];
     function addUnit(u, n, support) {
-      const figures = (u.teams ? u.teams.flatMap(t => t.figures.map(f => ({ ...f, team: t.name }))) : u.baseModule.figures.map(f => ({ ...f, team: 'Vehículo 1' })))
+      const figures = (u.teams ? u.teams.flatMap(t => t.figures.map((f, i) => ({ ...f, team: t.name, leader: i === 0 }))) : u.baseModule.figures.map((f, i) => ({ ...f, team: 'Vehículo 1', leader: i === 0 })))
         .map((f, i) => ({ ...f, key: `${u.id}:${n}:${i}`, unit: `${u.name}${n ? ' ' + (n + 1) : ''}`,
           support, present: !!f.fixed, reinforcement: false }));
       if (u.hasOptionalModule && s.motoModule) {
@@ -181,6 +181,18 @@
         if (next.support.fs_sniper || ![0, 1].includes(index) || typeof value !== 'string') return s;
         if (value && !calculate(s).donorCandidates.some(f => f.key === value)) return s;
         next.sniperDonors[index] = value;
+        break;
+      }
+      case 'recruitDiamond': {
+        // La selección visual confirma el alta y las dos bajas en una sola operación.
+        if (id !== 'fs_sniper' || next.support.fs_sniper || !value ||
+            !['force', 'reinforcement'].includes(value.method) || !Array.isArray(value.figures) ||
+            value.figures.length !== 2 || new Set(value.figures).size !== 2 ||
+            value.figures.some(key => typeof key !== 'string' || !key)) return s;
+        next.support.fs_sniper = 1;
+        next.sniperPayment = value.method;
+        next.sniperReserve = value.method === 'reinforcement' ? value.figures : [];
+        next.sniperDonors = value.method === 'force' ? value.figures : ['', ''];
         break;
       }
       case 'support': {
