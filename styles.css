@@ -441,6 +441,13 @@ body[data-view="mas"] .main { padding-bottom: 24px; }
 .table-card li { margin: 4px 0; }
 .table-card .note-line { background: var(--papel-2); color: var(--tinta); padding: 10px 12px; border-radius: 4px; }
 .table-card .note-line b { color: var(--tinta); }
+.weapon-table-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+body[data-view="tablas"] .main { max-width: 1100px; }
+.table-card .weapon-profiles { min-width: 780px; }
+.weapon-profiles td:nth-child(2), .weapon-profiles td:nth-child(3), .weapon-profiles td:nth-child(4), .weapon-profiles td:nth-child(5), .weapon-profiles td:nth-child(6) { white-space: nowrap; }
+.weapon-profiles td:first-child { min-width: 170px; font-weight: 650; }
+.weapon-profiles td:last-child { min-width: 210px; }
+.weapon-profiles th:first-child, .weapon-profiles td:first-child { position: sticky; left: 0; background: var(--papel); z-index: 1; }
 
 /* ---------- herramientas ---------- */
 .herramienta { padding: 6px 0 26px; }

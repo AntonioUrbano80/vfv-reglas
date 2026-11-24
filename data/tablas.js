@@ -3,6 +3,12 @@
    Las páginas son las del PDF (= impresa + 1).
    Símbolos: ▲ = boost (sube un escalón de dado), ▼ = burn (baja un escalón). */
 
+// Perfiles cotejados con CRB impreso 44 y 46–48, hoja resumen v3.5 y FAQ v2.5.
+function weaponProfileTable(rows, label) {
+  const escape = value => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return '<div class="weapon-table-scroll" role="region" tabindex="0" aria-label="' + escape(label) + '"><table class="weapon-profiles"><thead><tr><th>Arma</th><th>Alcance</th><th>Potencia</th><th>HE</th><th>Factor AT</th><th>Cuerpo a cuerpo</th><th>Notas</th></tr></thead><tbody>' + rows.map(([key, ...cells]) => '<tr data-weapon="' + key + '">' + cells.map(value => '<td>' + escape(value) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+}
+
 window.VFV_TABLAS = [
   {
     id: 'turno',
@@ -357,47 +363,62 @@ window.VFV_TABLAS = [
 
   {
     id: 'artilleria',
-    titulo: 'Artillería y fuego indirecto',
-    nota: 'Morteros en mesa (azotea, Unlimber) y obuses fuera de mesa (observador, 1d6 desvío, fallo = ½ pool). HE ignora cobertura en edificios/bosque denso.',
-    html: `
-      <table>
-        <tr><th>Arma</th><th>Alcance</th><th>Potencia</th><th>HE</th><th>Despliegue</th><th>Notas</th></tr>
-        <tr><td>Mortero ligero</td><td>4L</td><td>1d6</td><td>HE (S)</td><td>Azotea + Unlimber</td><td>Indirecto con observador</td></tr>
-        <tr><td>Mortero medio</td><td>5L</td><td>2d6</td><td>HE (S) *errata*</td><td>Azotea + Unlimber</td><td>Indirecto con observador; era HE (M)</td></tr>
-        <tr><td>Obús ligero</td><td>∞ (fuera mesa)</td><td>2d6</td><td>HE (M)</td><td>Llamada fuego</td><td>1d6 desvío; fallo = ½ pool (↑)</td></tr>
-        <tr><td>Obús medio</td><td>∞ (fuera mesa)</td><td>3d6</td><td>HE (L)</td><td>Llamada fuego</td><td>1d6 desvío; fallo = ½ pool (↑)</td></tr>
-        <tr><td>Obús pesado</td><td>∞ (fuera mesa)</td><td>4d6</td><td>HE (L)</td><td>Llamada fuego</td><td>Bombardeo prep.: 2d6 sin HE</td></tr>
-      </table>
-      <p class="note-line"><b>Procedimiento fuego indirecto (errata 2025):</b> 1) Observador detecta + LoS → 2) Monta pool → 3) Tira 1d6: 5+ = impacto objetivo; fallo = impacto desvía a ½ pool (redondeo ↑). Tropas a X del blanco = ½ dados.</p>
-      <p class="note-line"><b>Batería:</b> Varios tubos = suman pools, una sola tirada desvío.</p>
-      <p class="note-line"><b>HE en edificios/bosque denso/jungla:</b> tirador gana <b>▲2</b> (cobertura no protege de explosión).</p>`,
-    refs: [{ doc: 'crb', page: 30 }, { doc: 'crb', page: 46 }, { doc: 'e43', page: 57 }],
+    titulo: 'Perfiles de morteros y obuses',
+    nota: 'Potencia antipersona del arma, antes de modificadores. >M / ∞: objetivo a más de M; sin límite máximo dentro de la mesa. S/M en HE es el radio de explosión.',
+    html: weaponProfileTable([
+      ['mo-l', 'Mortero ligero (MO. L)', '>M / ∞', '4d6', 'S', 'E', '—', 'Arma pesada; solo fuego indirecto.'],
+      ['mo-m', 'Mortero medio (MO. M)', '>M / ∞', '4d8', 'S', 'E', '—', 'Arma pesada; solo fuego indirecto. HE (S), corregido por FAQ.'],
+      ['lh', 'Obús ligero (LH)', '>M / ∞', '4d6', 'S', 'E', '—', 'Barrage, Carriage, Shield; puede montarse en vehículo. Penetración según FAQ.'],
+      ['mh', 'Obús medio (MH)', '>M / ∞', '4d8', 'S', 'E', '—', 'HE (S), corregido por FAQ; puede montarse en vehículo. Penetración según FAQ.'],
+      ['hh', 'Obús pesado (HH)', '>M / ∞', '4d12', 'M', 'D', '—', 'Barrage, Carriage, Shield; puede montarse en vehículo.'],
+    ], 'Perfiles de morteros y obuses') + `
+      <p class="note-line"><b>Fuego indirecto:</b> tira 1d6; éxito (5+) = pool normal. Con fallo, retira la mitad de los dados iniciales, redondeando hacia arriba. Las otras unidades dentro del radio HE reciben siempre la mitad de los dados iniciales, redondeando hacia arriba. Se resuelve cada ataque por separado.</p>
+      <p class="note-line">Los obuses no son exclusivamente armas fuera de mesa: la armería también contempla piezas y montajes en vehículos. No confundas el perfil ordinario del obús pesado (<b>4d12, HE M</b>) con los ataques especiales de bombardeo preparatorio (<b>2d12 sin HE</b>).</p>`,
+    refs: [{ doc: 'crb', page: 48 }, { doc: 'crb', page: 49 }],
+  },
+
+  {
+    id: 'armas-pesadas',
+    titulo: 'Cañones antitanque (ATG) y autocañones',
+    nota: 'La potencia es el pool antipersona; no es la tirada de penetración. Contra vehículos se utiliza el factor AT. ∞ significa toda la mesa. — en potencia impide disparar contra infantería.',
+    html: weaponProfileTable([
+      ['atg-ul', 'ATG ultraligero (UL)', '∞', '—', '—', 'E', '—', 'Sin potencia antipersona. Penetración según FAQ; Ammo Bearers, Carriage, Shield.'],
+      ['atg-l', 'ATG ligero (L)', '∞', '4d6', 'S', 'D', '—', 'Ammo Bearers, Barrage, Carriage, Shield; Vehicle Weapon.'],
+      ['atg-m', 'ATG medio (M)', '∞', '4d8', 'S', 'C', '—', 'Ammo Bearers, Barrage, Carriage, Shield; Vehicle Weapon.'],
+      ['atg-h', 'ATG pesado (H)', '∞', '4d8', 'M', 'B', '—', 'Ammo Bearers, Barrage, Carriage, Shield.'],
+      ['atg-sh', 'ATG superpesado / extrapesado (SH)', '∞', '4d12', 'M', 'A', '—', 'Ammo Bearers, Barrage, Carriage, Shield; Vehicle Weapon.'],
+      ['acn', 'Autocañón (ACN)', '∞', '1d12', '—', 'E', '—', 'Rapid Fire; Penetración según FAQ.'],
+      ['acn-h', 'Autocañón pesado (ACN H)', '∞', '2d12', '—', 'D', '—', 'Rapid Fire.'],
+    ], 'Perfiles ATG y autocañones') + `
+      <p class="note-line"><b>ATG UL, L, M, H, SH:</b> ultraligero, ligero, medio, pesado y superpesado. El ATG ultraligero no tiene ataque antipersona; su factor E no equivale a tirar un dado E. Consulta la tabla antitanque para cruzar factor y blindaje.</p>`,
+    refs: [{ doc: 'crb', page: 48 }, { doc: 'crb', page: 49 }],
   },
 
   {
     id: 'armas-infanteria',
     titulo: 'Perfiles de armas de infantería',
-    nota: 'Incluye erratas 2025: SMG 2d6→d8, Francotirador d12+, Lanzallamas no reactivo, Mortero medio HE M→S, ATR éxitos=5.',
-    html: `
-      <table>
-        <tr><th>Arma</th><th>Alcance</th><th>Potencia</th><th>HE</th><th>Factor AT</th><th>Cuerpo a cuerpo</th><th>Notas</th></tr>
-        <tr><td>Rifle</td><td>2L</td><td>1d6</td><td>—</td><td>—</td><td>1d6</td><td>Base</td></tr>
-        <tr><td>SMG / Fusil asalto</td><td>2S</td><td><b>d8</b> *errata*</td><td>—</td><td>—</td><td><b>d8</b> *errata*</td><td>Era 2d6; también en CqC</td></tr>
-        <tr><td>LMG</td><td>2L</td><td>2d6</td><td>—</td><td>—</td><td>1d6</td><td>Cumbersome</td></tr>
-        <tr><td>HMG</td><td>3L</td><td>3d6</td><td>—</td><td>—</td><td>1d6</td><td>Cumbersome, Unlimber</td></tr>
-        <tr><td>Mortero ligero</td><td>4L</td><td>1d6</td><td>HE (S)</td><td>—</td><td>—</td><td>Solo azotea, indirecto</td></tr>
-        <tr><td>Mortero medio</td><td>5L</td><td>2d6</td><td><b>HE (S)</b> *errata*</td><td>—</td><td>—</td><td>Solo azotea, indirecto; era HE (M)</td></tr>
-        <tr><td>ATR (Fusil AT)</td><td>2L</td><td>—</td><td>—</td><td><b>E</b></td><td>1d6</td><td>Éxitos=5→daño ligero; 1d6 tras disparar: éxito = sin Fire</td></tr>
-        <tr><td>Lanzallamas</td><td>S</td><td>2d6</td><td>HE (S)</td><td>—</td><td>2d6</td><td><b>No reactivo</b> (errata 2025)</td></tr>
-        <tr><td>Panzerfaust</td><td>S</td><td>—</td><td>—</td><td><b>C</b></td><td>1d6</td><td>Portátil, anuncia antes</td></tr>
-        <tr><td>Bazooka / PIAT</td><td>S</td><td>—</td><td>—</td><td><b>D / E</b></td><td>1d6</td><td>Portátil, anuncia antes</td></tr>
-        <tr><td>Francotirador</td><td>3L</td><td><b>d12+</b> *errata*</td><td>—</td><td>—</td><td>1d6</td><td>Era d12; rival 1d6→Fire si acierta; no objetivo prioritario</td></tr>
-      </table>
-      <p class="note-line"><b>Cumbersome:</b> no puede correr. <b>Unlimber:</b> obligatorio antes de disparar (HMG, mortero, artillería).</p>
-      <p class="note-line"><b>Armas portátiles AT (Panzerfaust/Bazooka/PIAT/ATR):</b> se anuncian <b>antes</b> de resolver armas ligeras; una unidad puede hacer dos acciones de disparo en la misma orden (armas ligeras + portátil AT).</p>
-      <p class="note-line"><b>Francotirador d12+:</b> tira d12+d6, usa el mejor. No se puede potenciar otra vez. Despliegue oculto.</p>`,
-    refs: [{ doc: 'crb', page: 30 }, { doc: 'crb', page: 34 }, { doc: 'e43', page: 54 }, { doc: 'e43', page: 57 }],
+    nota: 'Perfiles de armería con las erratas de la FAQ v2.5 y la hoja resumen v3.5: SMG y fusil de asalto son armas distintas; ATW tiene factor C.',
+    html: weaponProfileTable([
+      ['pst', 'Pistola (PST)', 'M', '1d6', '—', '—', '1d6', 'Sidearm.'],
+      ['smg', 'Subfusil (SMG)', 'L', '1d8', '—', 'G', '1d8', 'Sidearm. Potencia y cuerpo a cuerpo corregidos por FAQ.'],
+      ['r', 'Fusil (R)', '2L', '1d6', '—', 'G', '1d6', 'Sidearm.'],
+      ['ar', 'Fusil de asalto (AR)', '2L', '1d8 (≤L) / 1d6 (>L)', '—', 'G', '1d8', 'Sidearm. Hasta L usa 1d8; más allá de L usa 1d6.'],
+      ['bar', 'Fusil automático (BAR)', '2L', '2d8', '—', 'G', '2d6', 'Sidearm.'],
+      ['sniper', 'Fusil de francotirador (SNIPER)', '∞', '1d12+', '—', 'G', '1d6', 'El boost propio ya está incluido en 1d12+.'],
+      ['lmg', 'Ametralladora ligera (LMG)', '3L', '4d6', '—', 'G', '2d6', 'Sidearm.'],
+      ['km', 'Mortero portátil / lanzagranadas (KM)', '2L', '1d8', '—', 'G', '1d6', 'Se incorpora al pool del equipo; no es el mortero ligero MO. L.'],
+      ['atr', 'Fusil anticarro (ATR)', '2L', '—', '—', 'E', '1d6', 'Solo contra vehículos. Éxitos de destrucción cuentan como 5; tras disparar, d6 exitoso evita marcador de Fuego.'],
+      ['atw', 'AT portátil recargable: bazooka / PIAT (ATW)', '2L', '—', '—', 'C', '—', 'Backblast, Short Range Firepower. Factor C corregido por FAQ.'],
+      ['atc', 'AT portátil desechable: panzerfaust (ATC)', 'L', '—', '—', 'D', '—', 'Independent, Short Range Firepower, Single Use.'],
+      ['ft', 'Lanzallamas (FT)', 'M', '4d12', '—', 'D', '4d12', 'No puede hacer fuego reactivo; sus dados no sufren burns al disparar. No tiene HE.'],
+      ['mmg', 'Ametralladora media (MMG)', '∞', '4d8', '—', 'G', '2d8', 'Ammo Bearers, Barrage, Cumbersome, Heavy Weapon, Vehicle Weapon.'],
+      ['hmg', 'Ametralladora pesada (HMG)', '∞', '3d12', '—', 'F', '2d8', 'Ammo Bearers, Barrage, Cumbersome, Heavy Weapon, Vehicle Weapon.'],
+    ], 'Perfiles de armas de infantería') + `
+      <p class="note-line"><b>1d12+:</b> tira 1d12 y 1d6 y conserva el mejor resultado; el boost del francotirador ya está incorporado. <b>HE —</b> significa que el arma no tiene esa regla; un lanzallamas no se trata como un arma HE.</p>
+      <p class="note-line">Las armas portátiles AT se anuncian antes de resolver las armas ligeras del equipo. La potencia antipersona y el factor antitanque son columnas diferentes.</p>`,
+    refs: [{ doc: 'crb', page: 45 }, { doc: 'crb', page: 47 }],
   },
+
 
   {
     id: 'blindaje-vehiculos',

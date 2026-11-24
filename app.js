@@ -543,6 +543,7 @@ const TABLA_CORTA = {
   turno: 'Turno', distancias: 'Medidas', spotting: 'Detección', disparo: 'Disparo', defensa: 'Defensa',
   at: 'Antitanque', 'armas-ligeras': 'Armas ligeras', asalto: 'Asalto', moral: 'Moral', danio: 'Daño',
   terreno: 'Terreno', montajes: 'Montajes',
+  artilleria: 'Morteros / obuses', 'armas-pesadas': 'ATG / cañones', 'armas-infanteria': 'Infantería',
 };
 
 function viewTablas() {

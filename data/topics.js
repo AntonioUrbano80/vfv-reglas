@@ -495,81 +495,51 @@ window.VFV_TOPICS = [
   },
 
   {
-    id: 'artilleria',
-    cat: 'Combate',
-    icono: '💣',
+    id: 'artilleria', cat: 'Combate', icono: '💣',
     titulo: 'Artillería y fuego indirecto',
-    resumen: 'Morteros (azotea, Unlimber, HE, indirecto) y obuses fuera de mesa (observador, desvío, corrección, baterías).',
-    buscar: 'artilleria mortero obus howitzer fuego indirecto observador desvio bateria HE azotea unlimber',
-    html: `
-      <p>El reglamento distingue dos tipos de artillería:</p>
-      <h3>Morteros (en mesa)</h3>
-      <ul>
-        <li>Solo pueden disparar desde una <b>azotea plana</b> (edificio).</li>
-        <li>Requieren acción <b>Unlimber</b> antes de disparar (y para reorientar).</li>
-        <li>Disparan <b>fuego indirecto</b>: no necesitan línea de visión al objetivo, solo que un <b>observador</b> (cualquier unidad amiga detectada) tenga línea de visión.</li>
-        <li>Potencia HE: ligero <b>HE (S)</b>, medio <b>HE (S)</b> (errata 2025: era M).</li>
-      </ul>
-      <h3>Obuses / Artillería fuera de mesa</h3>
-      <ul>
-        <li>Se dispara mediante <b>llamada de fuego</b>: el observador debe tener el objetivo detectado y en línea de visión.</li>
-        <li>Se tira <b>1d6</b> (errata 2025): <b>éxito (5+)</b> = impacto en el objetivo; <b>fallo</b> = el impacto se desvía y afecta a <b>mitad del pool de dados</b> (redondeando arriba).</li>
-        <li>Las tropas a <b>X del blanco</b> (distancia que indica el arma) son atacadas con <b>mitad de los dados</b>.</li>
-        <li>Varios tubos disparando a la vez = <b>batería</b>: se suman los pools y se resuelve una sola tirada de desvío.</li>
-      </ul>
-      <h3>Resolución común</h3>
-      <ol>
-        <li>Observador detecta objetivo y tiene línea de visión.</li>
-        <li>Se anuncia el arma y se monta el pool de dados (potencia del arma).</li>
-        <li>Se tira 1d6 para desvío (artillería fuera de mesa) o se resuelve directo (mortero en mesa con observador).</li>
-        <li>Impactos = éxitos; se aplica HE (ignora cobertura ligera/pesada en edificios/bosque denso/jungla → ▲2 al tirador).</li>
-        <li>Salvaciones normales (cobertura pesada = d12, fortificaciones = d12 repetible).</li>
-      </ol>
-      <div class="note"><b>Errata 2025 (e43 p.57):</b> Fuego indirecto = 1d6; fallo = mitad pool (redondeo arriba). Tropas a X del blanco = mitad dados.</div>`,
-    refs: [{ doc: 'crb', page: 30 }, { doc: 'crb', page: 46 }, { doc: 'e43', page: 57 }],
+    resumen: 'Morteros: 4d6 / 4d8. Obuses ligero, medio y pesado: 4d6 / 4d8 / 4d12. Alcance >M / ∞; HE S o M según perfil.',
+    buscar: 'artilleria mortero obus howitzer fuego indirecto HE potencia 4d12 4d8 4d6',
+    html: `<p>La potencia antipersona y el factor AT son datos distintos del perfil del arma:</p>
+      <ul><li><b>Mortero ligero:</b> 4d6, HE (S), AT E.</li>
+      <li><b>Mortero medio:</b> 4d8, HE (S), AT E; el radio S incorpora la errata.</li>
+      <li><b>Obús ligero:</b> 4d6, HE (S), AT E.</li>
+      <li><b>Obús medio:</b> 4d8, HE (S), AT E; el radio S incorpora la errata.</li>
+      <li><b>Obús pesado:</b> 4d12, HE (M), AT D.</li></ul>
+      <p>Estos perfiles tienen alcance <b>&gt;M / ∞</b>: mínimo superior a M y máximo que cubre la mesa. Los morteros solo hacen fuego indirecto; los obuses también aparecen como piezas y montajes de vehículo, no exclusivamente fuera de mesa.</p>
+      <h3>Fuego indirecto, según FAQ</h3><ol>
+      <li>Parte de los dados del perfil. Tira <b>1d6</b>: éxito (5+) = pool normal; fallo = <b>retirar la mitad de los dados iniciales, redondeando hacia arriba</b>.</li>
+      <li>Cada otra unidad dentro del radio HE recibe siempre <b>la mitad de los dados iniciales, redondeando hacia arriba</b>, independientemente del resultado del d6.</li>
+      <li>Resuelve cada ataque por separado. Los obstáculos lineales y los escudos no penalizan este fuego; la cobertura no degrada los ataques secundarios HE.</li></ol>
+      <p class="note">El bombardeo preparatorio es un ataque especial de <b>2d12 sin HE</b>; no modifica el perfil normal de <b>4d12</b> del obús pesado.</p>`,
+    refs: [{ doc: 'crb', page: 48 }, { doc: 'crb', page: 49 }, { doc: 'crb', page: 64 }],
+  },
+  {
+    id: 'lanzallamas', cat: 'Combate', icono: '🔥', titulo: 'Lanzallamas',
+    resumen: 'Alcance M, potencia 4d12, factor AT D y cuerpo a cuerpo 4d12. No tiene HE y no puede hacer fuego reactivo.',
+    buscar: 'lanzallamas flamethrower FT M 4d12 antitanque D fuego reactivo combustible',
+    html: `<p><b>Perfil FT:</b> alcance <b>M</b>, potencia <b>4d12</b>, factor <b>AT D</b> y cuerpo a cuerpo <b>4d12</b>. <b>No tiene la regla HE.</b></p>
+      <ul><li>No puede realizar fuego reactivo, según la FAQ.</li>
+      <li>Sus dados de potencia no sufren burns durante una acción de disparo.</li>
+      <li>Si al menos dos dados de potencia muestran el mismo resultado, el combustible se agota para el resto de la partida.</li>
+      <li>El equipo no puede moverse y disparar en la misma fase; se considera de tres figuras.</li>
+      <li>Contra vehículos, todos sus dados impactan automáticamente; se comprueba el agotamiento de combustible y se resuelve el ataque con su factor AT.</li>
+      <li>La unidad objetivo recibe inmediatamente <b>3 de Estrés</b>.</li></ul>`,
+    refs: [{ doc: 'crb', page: 47 }],
+  },
+  {
+    id: 'francotirador', cat: 'Combate', icono: '🎯', titulo: 'Francotirador',
+    resumen: 'Alcance ∞, potencia 1d12+, factor AT G y cuerpo a cuerpo 1d6. Su boost propio ya está incluido en el perfil.',
+    buscar: 'francotirador sniper alcance infinito d12+ fire marker perfil',
+    html: `<p><b>Perfil del fusil de francotirador:</b> alcance <b>∞</b>, potencia <b>1d12+</b>, factor <b>AT G</b> y cuerpo a cuerpo <b>1d6</b>. El número de figuras del equipo lo determina su orden de batalla.</p>
+      <ul><li>El objetivo de este disparo no puede echarse cuerpo a tierra.</li>
+      <li>El boost propio del francotirador ya está incluido en <b>1d12+</b>: tira 1d12 y 1d6 y conserva el mejor; no añadas otro boost por la misma regla.</li>
+      <li>La defensa contra este disparo siempre se hace con <b>1d6</b>.</li>
+      <li>El portador recibe un bono de una columna a la derecha en sus intentos de detección.</li>
+      <li>Tras disparar, el rival tira <b>1d6</b>: solo un éxito (5+) coloca un marcador de Fuego en la unidad.</li>
+      <li>Cuando dispara la figura con el fusil de francotirador, las demás figuras de su equipo no disparan.</li></ul>`,
+    refs: [{ doc: 'crb', page: 47 }],
   },
 
-  {
-    id: 'lanzallamas',
-    cat: 'Combate',
-    icono: '🔥',
-    titulo: 'Lanzallamas',
-    resumen: 'Alcance S, 2d6 HE (S). No reactivo (errata 2025). Devastador en edificios y bunkers. Fuerza chequeo de moral.',
-    buscar: 'lanzallamas flamethrower fuego reactivo edificio bunker moral panico',
-    html: `
-      <p>El lanzallamas es un arma especial de asalto cercano:</p>
-      <ul>
-        <li><b>Alcance:</b> S (10 cm).</li>
-        <li><b>Potencia:</b> <b>2d6</b> con regla <b>HE (S)</b>.</li>
-        <li><b>No puede usarse en fuego reactivo</b> (errata 2025, e43 p.54).</li>
-        <li>Contra unidades en <b>edificios</b> o <b>búnkeres</b>: ignora la cobertura (la explosión llena el espacio), causa <b>pánico</b> — la unidad objetivo hace chequeo de moral inmediato con <b>▼2</b>.</li>
-        <li>En asalto: potencia <b>2d6</b> en cuerpo a cuerpo.</li>
-        <li>El operador es una figura normal; si cae, el arma se pierde (no la puede recoger otro).</li>
-      </ul>
-      <div class="warn">Al ser HE, el tirador gana <b>▲2</b> contra edificios, bosque denso y jungla. Pero <b>no</b> gana bonificación contra vehículos (no es antitanque).</div>`,
-    refs: [{ doc: 'crb', page: 30 }, { doc: 'e43', page: 54 }, { doc: 'e43', page: 57 }],
-  },
-
-  {
-    id: 'francotirador',
-    cat: 'Combate',
-    icono: '🎯',
-    titulo: 'Francotirador',
-    resumen: 'Despliegue oculto, alcance 3L, d12+ (errata 2025). Tras disparar, rival tira 1d6: éxito = Fire marker. No objetivo prioritario.',
-    buscar: 'francotirador sniper oculto despliegue d12+ fire marker objetivo prioritario',
-    html: `
-      <p>El francotirador es un equipo de <b>una figura</b> con reglas únicas:</p>
-      <ul>
-        <li><b>Despliegue oculto:</b> se coloca en mesa boca abajo o se anota su posición. No cuenta para detección hasta que dispara o se le ve.</li>
-        <li><b>Perfil:</b> Alcance <b>3L</b>, Potencia <b>d12+</b> (errata 2025: era d12), Cuerpo a cuerpo <b>1d6</b>.</li>
-        <li><b>Tras disparar:</b> el rival tira <b>1d6</b>; con <b>éxito (5+)</b> coloca un <b>marcador de Fuego</b> en el francotirador (errata 2025, e43 p.54).</li>
-        <li><b>No es objetivo prioritario:</b> solo se le puede disparar si es la unidad enemiga <b>más cercana a L (30 cm)</b> de quien dispara.</li>
-        <li><b>Fuego reactivo:</b> puede disparar en reactivo (no tiene la restricción del lanzallamas).</li>
-        <li><b>Moral:</b> usa el dado de experiencia de su fuerza (Recruit d6 / Trained d8 / Elite d12).</li>
-      </ul>
-      <div class="note">El francotirador <b>no</b> tiene regla HE. Su potencia d12+ significa: tira d12 y d6, usa el mejor. No se puede potenciar otra vez.</div>`,
-    refs: [{ doc: 'crb', page: 30 }, { doc: 'e43', page: 54 }, { doc: 'e43', page: 57 }],
-  },
 
   {
     id: 'reservas',

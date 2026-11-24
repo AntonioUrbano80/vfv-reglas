@@ -948,8 +948,9 @@ window.VFV_FAQ = [
     cat: 'FAQ oficial 2025',
     q: '¿Cuánta potencia tienen los subfusiles tras la errata?',
     plain: 'la errata sube los smg y fusiles de asalto de dos d6 a d8, tambien en cuerpo a cuerpo',
-    html: `<p>La errata los sube de <b>2d6 a d8</b>, también en <b>cuerpo a cuerpo</b>. El francotirador
-      pasa a <b>d12+</b>.</p>`,
+    html: `<p>La errata cambia su potencia base y cuerpo a cuerpo de <b>2d6 a 1d8</b>. El SMG tiene alcance L;
+      el fusil de asalto, 2L, pero más allá de L su potencia de disparo se reduce a 1d6. El francotirador usa
+      <b>1d12+</b>, con su boost propio ya incluido.</p>`,
     refs: [{ doc: 'e43', page: 54 }],
   },
   {
@@ -1025,44 +1026,25 @@ window.VFV_FAQ = [
     id: 'artilleria-mortero-despliegue',
     cat: 'Artillería',
     q: '¿Cómo se despliega un mortero?',
-    plain: 'solo desde azotea plana, requiere accion unlimber antes de disparar y para reorientar, dispara fuego indirecto con observador',
-    html: `<p>El mortero es un arma de fuego indirecto con reglas específicas:</p>
-      <ul>
-        <li>Solo puede disparar desde una <b>azotea plana</b> de un edificio.</li>
-        <li>Requiere acción <b>Unlimber</b> (orden Tactical) antes de disparar y cada vez que se reorienta.</li>
-        <li>Dispara <b>fuego indirecto</b>: no necesita línea de visión al objetivo, basta con que un <b>observador</b> (cualquier unidad amiga detectada) lo tenga.</li>
-        <li>Potencia HE: ligero <b>HE (S)</b>, medio <b>HE (S)</b> (errata 2025: era M).</li>
-      </ul>`,
-    refs: [{ doc: 'crb', page: 46 }, { doc: 'e43', page: 54 }],
+    plain: 'mortero ligero 4d6 HE S y mortero medio 4d8 HE S; alcance mayor que M infinito, arma pesada y fuego indirecto, no requiere situarse en un edificio',
+    html: `<p><b>Mortero ligero:</b> 4d6, HE (S), AT E. <b>Mortero medio:</b> 4d8, HE (S), AT E. Ambos tienen alcance <b>&gt;M / ∞</b> y las reglas de arma pesada, Cumbersome y fuego indirecto.</p><p>No es obligatorio situarlos en un edificio. Si disparan desde uno, deben hacerlo desde su azotea plana. El HE (S) del mortero medio incorpora la errata.</p>`,
+    refs: [{ doc: 'crb', page: 48 }, { doc: 'crb', page: 37 }],
   },
   {
     id: 'artilleria-fuego-indirecto',
     cat: 'Artillería',
     q: '¿Cómo funciona el fuego indirecto?',
-    plain: 'observador detecta objetivo con linea de vision, se anuncia arma, se monta pool, se tira 1d6 para desvio (artilleria fuera de mesa) o resuelve directo (mortero), impactos = exitos, se aplica HE',
-    html: `<p>El fuego indirecto (morteros en mesa y obuses fuera de mesa) se resuelve así:</p>
-      <ol>
-        <li>Un <b>observador</b> (unidad amiga detectada con línea de visión al objetivo) "llama" el fuego.</li>
-        <li>Se anuncia el arma y se monta su <b>pool de dados</b> (potencia del arma).</li>
-        <li><b>Mortero en mesa:</b> resuelve directo contra el objetivo (el observador da la corrección).<br>
-            <b>Artillería fuera de mesa (obuses):</b> tira <b>1d6</b> (errata 2025): éxito (5+) = impacto en objetivo; fallo = <b>desvío</b> → afecta a <b>mitad del pool</b> (redondeando arriba).</li>
-        <li>Los <b>impactos = éxitos</b>. Se aplica regla <b>HE</b> (ignora cobertura ligera/pesada en edificios/bosque denso/jungla → tirador gana ▲2).</li>
-        <li>Salvaciones normales: cobertura pesada = d12, fortificaciones = d12 repetible.</li>
-      </ol>`,
-    refs: [{ doc: 'crb', page: 46 }, { doc: 'e43', page: 57 }],
+    plain: 'fuego indirecto tira 1d6 exito pool normal fallo retira mitad dados iniciales redondeando arriba; otras unidades radio HE mitad dados iniciales redondeando arriba',
+    html: `<p>El procedimiento de fuego indirecto de la FAQ se aplica también a los morteros:</p><ol><li>Tira <b>1d6</b>: éxito (5+) = pool normal; fallo = <b>retira la mitad de los dados iniciales, redondeando hacia arriba</b>.</li><li>Las otras unidades dentro del radio HE reciben siempre la mitad de los dados iniciales, redondeando hacia arriba.</li><li>Resuelve los ataques por separado. Los obstáculos lineales y escudos no penalizan este fuego; la cobertura no degrada los ataques secundarios HE.</li></ol><p>Ejemplo de mortero medio: <b>4d8</b> con éxito o <b>2d8</b> con fallo contra el objetivo principal; <b>2d8</b> contra cada otra unidad dentro de S.</p>`,
+    refs: [{ doc: 'crb', page: 48 }],
   },
   {
     id: 'artilleria-desvio',
     cat: 'Artillería',
     q: '¿Qué pasa si falla la tirada de fuego indirecto?',
-    plain: 'fallo en el 1d6 de desvio: el impacto afecta a la mitad del pool de dados redondeando arriba; las tropas a X del blanco reciben mitad de los dados',
-    html: `<p>Según la errata 2025 (e43 p.57), si la tirada de 1d6 para fuego indirecto <b>falla</b>:</p>
-      <ul>
-        <li>El impacto se desvía y solo afecta a <b>mitad del pool de dados</b> (redondeando hacia arriba).</li>
-        <li>Las tropas situadas a <b>X del blanco</b> (distancia que indica el perfil del arma) son atacadas con <b>mitad de los dados</b>.</li>
-      </ul>
-      <p>Si la tirada tiene <b>éxito (5+)</b>, el impacto cae en el objetivo declarado con el pool completo.</p>`,
-    refs: [{ doc: 'e43', page: 57 }],
+    plain: 'si falla el d6 de fuego indirecto se retira mitad de los dados iniciales redondeando arriba; ataques secundarios siempre mitad inicial redondeando arriba',
+    html: `<p>Si falla el d6 de fuego indirecto, <b>retira la mitad de los dados iniciales, redondeando hacia arriba</b>. No cambia el perfil del arma: un mortero medio parte de 4d8 y conserva 2d8 tras el fallo.</p><p>Cada otra unidad dentro del radio HE recibe siempre la mitad de los dados iniciales, redondeando hacia arriba, aunque el d6 haya fallado. Se resuelve cada ataque por separado.</p>`,
+    refs: [{ doc: 'crb', page: 48 }],
   },
   {
     id: 'artilleria-bateria',
@@ -1093,29 +1075,18 @@ window.VFV_FAQ = [
     id: 'lanzallamas-edificio',
     cat: 'Lanzallamas',
     q: '¿Cómo afecta el lanzallamas a unidades en edificios?',
-    plain: 'ignora la cobertura la explosion llena el espacio causa panico chequeo moral inmediato con dos burns',
-    html: `<p>El lanzallamas es devastador contra edificios:</p>
-      <ul>
-        <li><b>Ignora la cobertura</b>: la explosión llena el espacio interior.</li>
-        <li>Causa <b>pánico</b>: la unidad objetivo hace <b>chequeo de moral inmediato con ▼2</b>.</li>
-        <li>Al ser <b>HE (S)</b>, el tirador gana <b>▲2</b> contra edificios, bosque denso y jungla.</li>
-      </ul>`,
-    refs: [{ doc: 'crb', page: 30 }, { doc: 'e43', page: 57 }],
+    plain: 'lanzallamas M 4d12 no tiene HE no gana dos boosts HE contra edificios; no burns al disparar objetivo recibe tres estres',
+    html: `<p>El lanzallamas tiene alcance <b>M</b>, potencia <b>4d12</b> y <b>no tiene HE</b>. No le apliques el bono de ▲2 de las armas HE por disparar contra un edificio.</p><p>Sus dados de potencia no sufren burns al disparar y la unidad objetivo recibe inmediatamente <b>3 de Estrés</b>. El perfil no establece un chequeo automático de pánico con ▼2 por estar en un edificio.</p>`,
+    refs: [{ doc: 'crb', page: 47 }],
   },
   {
     id: 'lanzallamas-bunker',
     cat: 'Lanzallamas',
     q: '¿Sirve el lanzallamas contra un búnker?',
-    plain: 'si, ignora la cobertura del bunker y causa panico con chequeo moral a menos dos; el bunker no se puede tomar solo con lanzallamas hace falta asalto antitanque para la puerta',
-    html: `<p>Sí, el lanzallamas afecta a los ocupantes de un búnker:</p>
-      <ul>
-        <li><b>Ignora la cobertura</b> del búnker (explosión interna).</li>
-        <li>Causa <b>pánico</b> → chequeo de moral inmediato con <b>▼2</b>.</li>
-        <li>Pero <b>no destruye el búnker</b> ni abre la puerta: para tomar un búnker hace falta <b>asalto antitanque</b> (regla Anti-Tank Assault) contra la puerta.</li>
-      </ul>`,
-    refs: [{ doc: 'crb', page: 62 }, { doc: 'e43', page: 57 }],
+    plain: 'si tiene disparo valido a ocupantes de bunker usa perfil lanzallamas M 4d12 sin HE; objetivo tres estres no burns al disparar',
+    html: `<p>Si el lanzallamas puede disparar válidamente a los ocupantes, usa su perfil: <b>M, 4d12, sin HE</b>. Sus dados de potencia no sufren burns durante el disparo y el objetivo recibe <b>3 de Estrés</b>.</p><p>No añadas el bono de ▲2 de HE ni un chequeo automático de pánico con ▼2: no forman parte de este perfil. No deduzcas de él una regla para destruir el búnker o abrir su puerta.</p>`,
+    refs: [{ doc: 'crb', page: 47 }],
   },
-
   /* ============ FRANCOTIRADOR ============ */
   {
     id: 'francotirador-despliegue',
