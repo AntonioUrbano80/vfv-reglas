@@ -448,6 +448,9 @@ body[data-view="tablas"] .main { max-width: 1100px; }
 .weapon-profiles td:first-child { min-width: 170px; font-weight: 650; }
 .weapon-profiles td:last-child { min-width: 210px; }
 .weapon-profiles th:first-child, .weapon-profiles td:first-child { position: sticky; left: 0; background: var(--papel); z-index: 1; }
+.weapon-counts { display: grid; gap: 6px 16px; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); }
+.weapon-counts label { display: flex; gap: 6px; justify-content: space-between; align-items: center; font-size: 14px; }
+.weapon-counts .field { width: 64px; flex: none; }
 
 /* ---------- herramientas ---------- */
 .herramienta { padding: 6px 0 26px; }

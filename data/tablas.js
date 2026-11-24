@@ -5,6 +5,9 @@
 
 // Perfiles cotejados con CRB impreso 44 y 46–48, hoja resumen v3.5 y FAQ v2.5.
 function weaponProfileTable(rows, label) {
+  window.VFV_WEAPON_PROFILES ||= {};
+  for (const [id, name, range, firepower, he, at, combat, notes] of rows)
+    window.VFV_WEAPON_PROFILES[id] = { id, name, range, firepower, he, at, combat, notes };
   const escape = value => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   return '<div class="weapon-table-scroll" role="region" tabindex="0" aria-label="' + escape(label) + '"><table class="weapon-profiles"><thead><tr><th>Arma</th><th>Alcance</th><th>Potencia</th><th>HE</th><th>Factor AT</th><th>Cuerpo a cuerpo</th><th>Notas</th></tr></thead><tbody>' + rows.map(([key, ...cells]) => '<tr data-weapon="' + key + '">' + cells.map(value => '<td>' + escape(value) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
 }

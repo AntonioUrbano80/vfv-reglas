@@ -28,7 +28,7 @@ const state = {
 };
 
 // Vistas que cuelgan de la pestaña «Más» de la barra inferior.
-const GRUPO_MAS = ['mas', 'secuencia', 'mesa', 'gce', 'docs', 'ejercito'];
+const GRUPO_MAS = ['mas', 'secuencia', 'mesa', 'gce', 'docs', 'ejercito', 'early'];
 const VISTAS = ['buscar', 'temas', 'faq', 'tablas', ...GRUPO_MAS];
 
 // Abreviatura de cada libro en los sellos de página.
@@ -153,6 +153,7 @@ function render() {
     docs: viewDocs,
     mas: viewMas,
     ejercito: () => window.VFVBuilder.mount(main),
+    early: viewEarlyOrders,
   }[state.view] || viewBuscar;
   fn();
 }
@@ -764,6 +765,7 @@ function viewMesa() {
       </div>
 
       <div class="tab-panel active" id="tab-pool">
+        <div id="weaponPoolEditor"></div>
         <div class="pool-editor" id="poolEditor">
           <div class="pool-header">
             <span>Pool de dados</span>
@@ -977,9 +979,17 @@ function viewMesa() {
 
   let pool = []; // [{type: 'd6'|'d8'|'d12', count: n}]
   let transformedPool = [];
+  let ignorePoolBurns = false;
 
   const poolList = wrap.querySelector('#poolList');
   const poolTotal = wrap.querySelector('#poolTotal');
+  window.VFVWeaponPool?.mount(wrap.querySelector('#weaponPoolEditor'), group => {
+    ignorePoolBurns = group.ignoreBurns === true;
+    pool = group.pool.map(d => ({ ...d }));
+    renderPool();
+    renderTransformed();
+    wrap.querySelector('#diceRollResult').hidden = true;
+  });
 
   function renderPool() {
     if (!pool.length) {
@@ -1074,7 +1084,7 @@ function viewMesa() {
 
   function renderTransformed() {
     const net = +(wrap.querySelector('#boostCount')?.value || 0);
-    transformedPool = applyBoostBurn(pool, net);
+    transformedPool = applyBoostBurn(pool, ignorePoolBurns ? Math.max(0, net) : net);
 
     const tList = wrap.querySelector('#transformedList');
     if (!transformedPool.length) {
@@ -1135,6 +1145,7 @@ function viewMesa() {
 
   // Eventos pool
   wrap.querySelector('#addDieBtn').addEventListener('click', () => {
+    ignorePoolBurns = false;
     const type = 'd' + wrap.querySelector('#addDieType').value;
     const count = Math.min(20, Math.max(1, +wrap.querySelector('#addDieCount').value || 1));
     const existing = pool.findIndex(d => d.type === type);
@@ -1452,9 +1463,32 @@ function viewDocs() {
 }
 
 /* ---------- 9. MÁS ---------- */
+function viewEarlyOrders() {
+  const orders = window.VFV_EARLY_ORDERS || [];
+  const nations = [...new Set(orders.map(order => order.nation))];
+  const escape = VFV.escapeHtml;
+  const page = number => pagHtml({ doc: 'e43', page: number });
+  const wrap = el(`<section>
+    <button class="volver" id="early-back" type="button">${icon('volver')} Más</button>
+    <h2 class="page-title">Órdenes de batalla 1939–1943</h2>
+    <p class="sub">Consulta la composición y los apoyos en tu copia del suplemento. El periodo indica el contexto de la lista. Comprueba la fecha de cada unidad en su ficha.</p>
+    <p class="note-line">Si hay diferencias con el libro, aplica las <a href="https://www.studio-tomahawk.com/dl/V_SUPL_FAQ_UK_v1.pdf" target="_blank" rel="noopener noreferrer">erratas del suplemento</a> y la <a href="https://www.studio-tomahawk.com/dl/V_FAQ_UK_v2.5.pdf" target="_blank" rel="noopener noreferrer">FAQ del reglamento</a>.</p>
+    ${nations.map(nation => `<h3 class="sec-head">${escape(nation)}</h3><div class="grid">${orders.filter(order => order.nation === nation).map(order => `<article class="card">
+      <strong>${escape(order.name)}</strong><p class="note-line">${escape(order.context)}</p>
+      <div class="refs"><strong>Orden de batalla</strong> ${page(order.page)}</div>
+      <div class="refs"><strong>Apoyo divisional</strong> ${order.supportPages.map(page).join('')}</div>
+      ${order.page === 24 ? '<button class="btn" id="early-builder" type="button">Construir lista · Francia 1940</button>' : ''}
+    </article>`).join('')}</div>`).join('')}
+  </section>`);
+  wrap.querySelector('#early-back').addEventListener('click', () => go('mas'));
+  wrap.querySelector('#early-builder')?.addEventListener('click', () => go('ejercito'));
+  main.appendChild(wrap);
+}
+
 function viewMas() {
   const local = !!window.VFV_LOCAL;
   const items = [
+    ['early', 'bandera', 'Órdenes de batalla 1939–1943', 'Índice del suplemento por nación, con páginas de cada lista y sus apoyos'],
     ['ejercito', 'bandera', 'Constructor de listas', 'Infantería británica · Francia 1940, con refuerzos de asignación manual'],
     ['mesa', 'dado', 'Herramientas', 'Dados, eventos aleatorios y control de unidades'],
     ['secuencia', 'turno', 'Turno paso a paso', 'Lista de comprobación de cada fase'],

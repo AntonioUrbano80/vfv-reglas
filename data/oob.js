@@ -5,6 +5,31 @@
    El OCR de las páginas de OOB (CRB pp. 73-110, e43 pp. 30-50, GCE pp. 10-12)
    es demasiado corrupto (tablas, siluetas, números) para extracción automática. */
 
+// Índice por orden de batalla real del suplemento. Páginas del PDF local.
+// Un periodo de contexto no sustituye las restricciones de cada perfil divisional.
+window.VFV_EARLY_ORDERS = [
+  ['Francia', 'Infantería', '1939–1940', 5, [8, 9]],
+  ['Francia', 'Dragones montados', '1939–1940', 6, [8, 9]],
+  ['Francia', 'Infantería motorizada', 'Campaña de 1940', 7, [8, 9]],
+  ['Alemania', 'Infantería', '1939–1943', 11, [14, 15, 16]],
+  ['Alemania', 'Infantería motorizada', '1939–1943', 12, [14, 15, 16]],
+  ['Alemania', 'Infantería aerotransportada', '1939–1943', 13, [14, 15, 16]],
+  ['Italia', 'Infantería', '1940–1943', 18, [21, 22]],
+  ['Italia', 'Bersaglieri', '1940–1943', 19, [21, 22]],
+  ['Italia', 'Infantería aerotransportada', 'Desde finales de 1941', 20, [21, 22]],
+  ['Gran Bretaña y Commonwealth', 'Infantería', '1939–1943', 24, [27, 28, 29]],
+  ['Gran Bretaña y Commonwealth', 'Infantería motorizada', 'Europa y norte de África', 25, [27, 28, 29]],
+  ['Gran Bretaña y Commonwealth', 'Comandos', 'Desde 1940', 26, [27, 28, 29]],
+  ['Unión Soviética', 'Infantería', '1939–1943', 31, [34, 35]],
+  ['Unión Soviética', 'Infantería motorizada', 'Desde 1941', 32, [34, 35]],
+  ['Unión Soviética', 'Paracaidistas', '1941–1942', 33, [34, 35]],
+  ['Bélgica', 'Infantería', 'Campaña de 1940', 37, [38]],
+  ['Polonia', 'Infantería', 'Campaña de 1939', 39, [40]],
+  ['Finlandia', 'Infantería', 'Guerra de Invierno y Guerra de Continuación', 41, [42]],
+  ['Estados Unidos', 'Infantería', 'Norte de África y Sicilia, 1942–1943', 43, [45, 46]],
+  ['Estados Unidos', 'Infantería mecanizada', 'Norte de África y Sicilia, 1942–1943', 44, [45, 46]],
+].map(([nation, name, context, page, supportPages]) => ({ nation, name, context, page, supportPages }));
+
 window.VFV_OOB = [
   /* ============ CRB — NACIONES BASE ============ */
   {

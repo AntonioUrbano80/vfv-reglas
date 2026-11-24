@@ -371,7 +371,8 @@ const DIVISIONAL_VEHICLES = [
 
   // Cañones autopropulsados, transportes, material US
   { id: 'ds_2pdr_portee', name: 'QF 2-pdr Portee', cost: 1, armor: 0, weapons: ['AT ligero, arco 180°'], rules: ['Abierto'], avail: ['AN40-41', 'AN/S42-43'], category: 'CA autopropulsados, transportes y material US', options: [] },
-  { id: 'ds_6pdr_portee', name: 'QF 6-pdr Portee', cost: 6, armor: 0, weapons: ['AT medio, arco 180°'], rules: ['Abierto'], avail: ['AN/S42-43'], category: 'CA autopropulsados, transportes y material US', options: [] },
+  // FAQ del suplemento, 10-02-2026, p. 38: cuesta 2 estrellas.
+  { id: 'ds_6pdr_portee', name: 'QF 6-pdr Portee', cost: 2, armor: 0, weapons: ['AT medio, arco 180°'], rules: ['Abierto'], avail: ['AN/S42-43'], category: 'CA autopropulsados, transportes y material US', options: [] },
   { id: 'ds_jeep', name: 'Jeep Willys', cost: 0, armor: 0, weapons: ['Sin arma de serie'], rules: ['Reconocimiento', 'Abierto', 'Transporte 4'], avail: ['AN/S42-43'], category: 'CA autopropulsados, transportes y material US', options: [
     { id: 'opt_jeep_gun', name: 'LMG o MMG', cost: 1, weapons: ['LMG/MMG P'] }
   ]},
