@@ -783,7 +783,13 @@ function viewMesa() {
           </div>
           <div class="pool-mods">
             <label>Boost/Burn neto manual: <input type="number" class="field small" id="boostCount" value="0" min="-20" max="20" step="1" aria-label="Boosts netos (positivo = boost, negativo = burn)" /></label>
-            <p class="note-line"><small>Boost = ▲ (sube escalón), Burn = ▼ (baja escalón). Se anulan: pon neto. +2 = dos boosts; −1 = un burn.</small></p>
+            <p class="note-line"><small>El ajuste manual se suma a las situaciones de la hoja rápida.</small></p>
+            <div class="toolbar-row" aria-label="Modificadores de la hoja rápida">
+              <button class="btn" type="button" data-open-mods="mods-antipersona">Hoja rápida · Antipersonal</button>
+              <button class="btn" type="button" data-open-mods="mods-antitanque">Antitanque</button>
+              <button class="btn" type="button" data-open-mods="mods-asalto">Asalto</button>
+              <button class="btn" type="button" data-open-mods="mods-moral">Moral</button>
+            </div>
           </div>
           <button class="btn primary" id="transformBtn" type="button">Transformar pool</button>
         </div>
@@ -867,18 +873,17 @@ function viewMesa() {
   // ---- Tabs ----
   const tabBtns = wrap.querySelectorAll('.tab-btn');
   const tabPanels = wrap.querySelectorAll('.tab-panel');
-  let activeTab = 'pool';
   let manualBoost = 0;
+  let finalNet = 0;
 
   function switchTab(tabId) {
-    activeTab = tabId;
     tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
     tabPanels.forEach(p => p.classList.toggle('active', p.id === 'tab-' + tabId));
-    if (tabId.startsWith('mods-') && !wrap.querySelector('#tab-' + tabId).innerHTML) {
-      renderModifierTab(tabId.replace('mods-', ''));
-    }
+    const key = tabId.replace('mods-', '');
+    if (tabId.startsWith('mods-') && MODIFIER_TABLES[key] && !wrap.querySelector('#modSummary-' + key)) renderModifierTab(key);
   }
   tabBtns.forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+  wrap.querySelectorAll('[data-open-mods]').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.openMods)));
 
   // ---- Modificadores ----
   let selectedMods = {}; // { modId: count }
@@ -906,15 +911,15 @@ function viewMesa() {
       }
       html += `</div></div>`;
     }
-    html += `<div class="mod-summary" id="modSummary-${key}"></div>`;
+    html += `<div class="mod-summary" id="modSummary-${key}"></div><button type="button" class="btn" data-back-pool>Ver pool ajustado</button>`;
     panel.innerHTML = html;
+    panel.querySelector('[data-back-pool]').addEventListener('click', () => switchTab('pool'));
     panel.querySelectorAll('.mod-counter button').forEach(b => {
       b.addEventListener('click', () => {
         const id = b.dataset.mod;
         const delta = +b.dataset.delta;
         selectedMods[id] = Math.max(0, (selectedMods[id] || 0) + delta);
         updateModCounters(key);
-        updateNetDisplay();
       });
     });
     updateModCounters(key);
@@ -928,7 +933,10 @@ function viewMesa() {
       for (const mod of cat.mods) {
         const count = selectedMods[mod.id] || 0;
         const el = wrap.querySelector('#modcount-' + mod.id);
-        if (el) el.textContent = count;
+        if (el) {
+          el.textContent = count;
+          el.previousElementSibling.disabled = count === 0;
+        }
         totalBoost += mod.boost * count;
         totalBurn += mod.burn * count;
       }
@@ -953,9 +961,8 @@ function viewMesa() {
         }
       }
     }
-    manualBoost = +(wrap.querySelector('#manualBoostCount')?.value || 0);
     const autoNet = totalBoost - totalBurn;
-    const finalNet = autoNet + manualBoost;
+    finalNet = autoNet + manualBoost;
 
     const display = wrap.querySelector('#netDisplay');
     if (display) {
@@ -966,9 +973,6 @@ function viewMesa() {
           <span class="final-net">Neto final: <strong>${finalNet >= 0 ? '+' : ''}${finalNet}</strong></span>
         </div>`;
     }
-    // Actualizar el input hidden del pool editor
-    const boostInput = wrap.querySelector('#boostCount');
-    if (boostInput) boostInput.value = finalNet;
     renderTransformed();
   }
 
@@ -987,7 +991,7 @@ function viewMesa() {
     ignorePoolBurns = group.ignoreBurns === true;
     pool = group.pool.map(d => ({ ...d }));
     renderPool();
-    renderTransformed();
+    updateNetDisplay();
     wrap.querySelector('#diceRollResult').hidden = true;
   });
 
@@ -1083,8 +1087,10 @@ function viewMesa() {
   }
 
   function renderTransformed() {
-    const net = +(wrap.querySelector('#boostCount')?.value || 0);
+    const net = finalNet;
     transformedPool = applyBoostBurn(pool, ignorePoolBurns ? Math.max(0, net) : net);
+    wrap.querySelector('#poolResult').hidden = !transformedPool.length;
+    wrap.querySelector('#diceRollResult').hidden = true;
 
     const tList = wrap.querySelector('#transformedList');
     if (!transformedPool.length) {
@@ -1156,7 +1162,8 @@ function viewMesa() {
   });
 
   wrap.querySelector('#boostCount').addEventListener('input', () => {
-    renderTransformed();
+    manualBoost = Math.max(-20, Math.min(20, Math.trunc(+wrap.querySelector('#boostCount').value || 0)));
+    wrap.querySelector('#manualBoostCount').value = manualBoost;
     updateNetDisplay();
   });
   wrap.querySelector('#transformBtn').addEventListener('click', () => {
@@ -1165,7 +1172,11 @@ function viewMesa() {
   });
   wrap.querySelector('#rollPoolBtn').addEventListener('click', rollTransformedPool);
   wrap.querySelector('#rerollBtn').addEventListener('click', rollTransformedPool);
-  wrap.querySelector('#manualBoostCount')?.addEventListener('input', updateNetDisplay);
+  wrap.querySelector('#manualBoostCount')?.addEventListener('input', event => {
+    manualBoost = Math.max(-20, Math.min(20, Math.trunc(+event.target.value || 0)));
+    wrap.querySelector('#boostCount').value = manualBoost;
+    updateNetDisplay();
+  });
 
   renderPool();
 
