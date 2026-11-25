@@ -11,6 +11,72 @@
     43: 'us-infantry-1942', 44: 'us-mechanised-1942',
   };
   function rosterForPage(page) { return defaultRosterByPage[page]; }
+  const ability = {
+    'Sidearm': ['Arma individual', 'Puede dispararse desde un vehículo si su portador está embarcado.'],
+    'Ammo Bearers': ['Portamuniciones', 'Si solo queda el tirador, degrada un escalón todos los dados de potencia.'],
+    'Barrage': ['Fuego de barrera', 'Cada unidad afectada que no reciba impactos sufre igualmente un estrés.'],
+    'Cumbersome': ['Voluminosa', 'La dotación no puede mover más de S ni asaltar. Si mueve más de S, abandona el arma y se retira el equipo.'],
+    'Heavy Weapon': ['Arma pesada', 'Debe emplazarse antes de disparar, salvo que se despliegue emplazada. Su arco frontal es de 180°.'],
+    'Vehicle Weapon': ['Arma de vehículo', 'En un vehículo ignora afuste, escudo, arma pesada, voluminosa y portamuniciones. Arco de 45°, o 360° en montaje exterior giratorio.'],
+    'Carriage': ['Afuste', 'Debe emplazarse y tiene arco de 45°. Avanza S con cuatro o más servidores y VS con menos. Su equipo no corre, no asalta ni cruza obstáculos lineales.'],
+    'Shield': ['Escudo', 'Da cobertura a la dotación en el arco frontal de 180°. Contra fuego anticarro, la pieza tiene blindaje 1 y queda destruida con 5 o más.'],
+    'Rapid Fire': ['Fuego rápido', 'En fuego anticarro, resuelve dos disparos consecutivos contra el mismo vehículo.'],
+    'Backblast': ['Rebufo', 'Impide disparar desde interiores cerrados. Se permite disparar desde ruinas.'],
+    'Short Range Firepower': ['Potencia a corta distancia', 'Si dispara más allá de la mitad de su alcance máximo, aplica una degradación adicional.'],
+    'Independent': ['Independiente', 'Un equipo activo puede disparar un Panzerfaust sin gastar una acción, antes o después de otra acción propia o durante una acción enemiga.'],
+    'Single Use': ['Un solo uso', 'Una vez disparada, el arma se agota para el resto de la partida.'],
+    'fuego indirecto': ['Fuego indirecto', 'Puede trazar visión desde el comandante y prescinde de línea de tiro. Tira 1d6. Si falla, retira la mitad de los dados iniciales, redondeando hacia arriba.'],
+    'HE': ['Alto explosivo', 'El tamaño indicado es el radio. Cada otra unidad dentro del radio recibe la mitad de los dados iniciales, redondeando hacia arriba según la FAQ. Resuelve los ataques por separado.'],
+    'SNIPER': ['Francotirador', 'Con 1d12+ tira 1d12 y 1d6 y conserva el mejor resultado. El aumento propio del arma ya está incluido.'],
+  };
+  function weaponFromLabel(name) {
+    return [
+      [/\b(?:ATG|AT) ultraligero/i, 'atg-ul'], [/\b(?:ATG|AT) (?:superpesado|extrapesado)/i, 'atg-sh'],
+      [/\b(?:ATG|AT) pesado|Pak 40/i, 'atg-h'], [/\b(?:ATG|AT) medio|6-pdr/i, 'atg-m'],
+      [/\b(?:ATG|AT) ligero|2-pdr|Pak 38/i, 'atg-l'], [/mortero medio/i, 'mo-m'], [/mortero ligero/i, 'mo-l'],
+      [/obús pesado/i, 'hh'], [/obús medio/i, 'mh'], [/obús ligero/i, 'lh'],
+      [/autocañón|cañón automático/i, 'acn'], [/\bHMG\b/i, 'hmg'], [/\bMMG\b/i, 'mmg'],
+      [/\bLMG\b/i, 'lmg'], [/\bATR\b/i, 'atr'],
+    ].find(([pattern]) => pattern.test(name))?.[1];
+  }
+  function battleRules(rosterId, state) {
+    const key = rosterId === 'e43-british-early' ? 'uk-infantry' :
+      rosterId.replace(/^fr-(?:vichy|free)-/, 'fr-').split('-').slice(0, 2).join('-');
+    const mechanised = ['Mecanizados', 'Los equipos pueden desembarcar como parte de un asalto. Los vehículos de escuadra forman parte de ella.'];
+    const tenacious = ['Tenaces', 'Gana los empates en asalto, incluso al atacar. Si ambos bandos tienen la regla, se anula.'];
+    const stoic = ['Estoicos', 'Una vez por turno, cuando asalten a un equipo, tira 1d12 antes de resolverlo. Con éxito, retira un marcador de activación de esa unidad.'];
+    const defence = ['A la defensiva', 'Una vez por turno, al hacer fuego reactivo, tira 1d8. Con éxito, ignora su penalización.'];
+    const france = ['Hasta el final', 'Antes de resolver un asalto, tira 1d8. Con éxito, la unidad cuenta como Élite.'];
+    const germany = ['Tácticos', 'Una vez por turno, tras revelar una carta de activación, tira 1d12. Con éxito puedes sustituir una orden de la carta por una de cualquier tipo.'];
+    const italy = ['Imprevisibles', 'En un chequeo de moral tira 2d8. Dos éxitos mejoran el dado un escalón, uno lo deja igual y cero lo degradan.'];
+    const flik = ['Flik Flok', 'Si eliges Élite al reclutar, tira 1d8. Con éxito, cuesta una estrella menos.'];
+    const soviet = ['Comisario', 'Permite incluir gratis un comisario político. Consulta sus efectos en el suplemento, p. impresa 41.'];
+    const usa = ['Fuego a discreción', 'Una vez por turno, tras revelar una carta de activación, tira 1d12. Con éxito, una unidad desactivada puede hacer fuego de supresión.'];
+    const rules = {
+      'fr-infantry': [defence, france],
+      'fr-colonial': [defence, ['Hasta el final', 'El éxito de esta regla es automático. El primer apoyo divisional cuesta una estrella adicional.']],
+      'fr-dragoons': [mechanised, france], 'fr-motorised': [mechanised, france],
+      'de-infantry': [['Redespliegue', 'Tras desplegar ambas fuerzas, permite redesplegar una unidad en la zona propia.'], germany],
+      'de-motorised': [mechanised, germany], 'de-airborne': [tenacious, germany],
+      'it-infantry': [['Hora de gloria', 'Una vez por turno elige una unidad y tira 1d8. Con éxito, sube un nivel de experiencia hasta el final del turno.'], italy],
+      'it-bersaglieri': [flik, italy], 'it-airborne': [tenacious, flik],
+      'uk-infantry': [['Preparados · Bombardeo preparatorio', 'Tras desplegar y antes del primer turno, tira 1d8. Con éxito, resuelve un bombardeo preparatorio (2d12, sin alto explosivo). Reglamento básico, p. impresa 62.'], stoic],
+      'uk-motorised': [mechanised, stoic],
+      'uk-commandos': [['Infiltración', 'Sus equipos cuentan como dos figuras o menos al ser detectados o atacados con fuego.'], ['Avance implacable', 'Al final del turno, los equipos que sigan activos pueden tirar 1d8. Con éxito, pueden avanzar o correr.']],
+      'su-infantry': [['La cantidad es calidad', 'Una vez por turno, antes de revelar una carta de activación, tira 2d6. Por cada éxito, recupera una figura perdida a S o menos de un jefe de equipo.'], soviet],
+      'su-motorised': [mechanised, soviet], 'su-airborne': [tenacious, soviet],
+      'be-infantry': [['¡Por el honor!', 'Una vez por turno, sustituye un dado de defensa por 1d12.'], ['Última resistencia', 'Antes de resolver un asalto contra una unidad propia, tira 1d8. Con éxito, el rival retira el mejor dado de su pool.']],
+      'pl-infantry': [['Tenacidad obstinada', 'Una vez por turno, antes o después de una activación propia, tira 1d8. Con éxito, una unidad desactivada puede chequear moral con 1d8 sin modificadores.'], ['Apoyo popular', 'Al final del turno, tira 1d8. Con éxito, una unidad recibe un fusilero sin superar su tamaño máximo.']],
+      'fi-infantry': [['Fantasmas', 'Una vez por turno, tira 1d12. Con éxito, retira un marcador de Fuego de una unidad propia.'], ['Cazadores natos', 'Al detectar con infantería, tira 1d8. Con éxito, desplaza una columna a la derecha.']],
+      'us-infantry': [['Apoyo', 'Durante la preparación del escenario, tira 1d8. Con éxito, puedes gastar una estrella extra exclusivamente en apoyo divisional.'], usa],
+      'us-mechanised': [mechanised, usa],
+    };
+    const selected = (rules[key] || []).map(([name, desc]) => ({ name, desc }));
+    if (state.antiTankAssault || ['de-airborne', 'it-airborne', 'uk-commandos'].includes(key)) {
+      selected.push({ name: 'Asalto anticarro', desc: 'En asalto contra vehículos, las figuras de los equipos de escuadra usan 1d8 para impactar y factor AT E.' });
+    }
+    return selected;
+  }
   function mount(host, options = {}) {
     const british = ['e43-british-early', 'Infantería británica · Francia 1940', 'Gran Bretaña', 'Francia 1940', 1940, 'F40'];
     const french = window.VFVFranceInfantry;
@@ -263,7 +329,7 @@
       if (t.errors.length) {
         if (!confirm('La lista tiene errores de validación:\n' + t.errors.join('\n') + '\n\n¿Exportar de todos modos?')) return;
       }
-      const html = generatePdfHtml(t, state, D, E, rosterName, nation, period, year, campaign);
+      const html = generatePdfHtml(t, state, D, E, rosterName, nation, period, year, campaign, rosterId);
       const printWindow = window.open('', '_blank');
       if (!printWindow) { alert('Permite las ventanas emergentes para imprimir la lista.'); return; }
       printWindow.document.write(html);
@@ -271,9 +337,10 @@
       printWindow.focus();
       setTimeout(() => printWindow.print(), 250);
     }
-    function generatePdfHtml(t, state, D, E, rosterName, nation, period, year, campaign) {
-      const weaponProfiles = collectWeaponProfiles(t, D, E);
-      const rulesRef = state.antiTankAssault ? [{ name: 'Asalto anticarro', desc: 'Se aplica a los equipos de las escuadras.' }] : [];
+    function generatePdfHtml(t, state, D, E, rosterName, nation, period, year, campaign, rosterId) {
+      const weaponProfiles = collectWeaponProfiles(t, state, D, E);
+      const rulesRef = battleRules(rosterId, state);
+      const glossary = [...new Set(weaponProfiles.flatMap(p => p.abilities))];
       const totalMinis = t.minis;
       const coreMinis = t.core;
       const fireMinis = t.fire;
@@ -383,10 +450,14 @@ ${weaponProfiles.length > 0 ? `
 </section>
 ` : ''}
 
+${glossary.length ? '<section><h2>Habilidades de las armas</h2>' +
+  glossary.map(id => '<p><strong>' + esc(ability[id][0]) + '</strong> · ' + esc(ability[id][1]) + '</p>').join('') +
+  '<p class="note">Reglamento básico, p. impresa 49, y FAQ general.</p></section>' : ''}
+
 ${rulesRef.length > 0 ? `
 <hr>
 <section class="section page-break">
-  <h2>4. Referencia de reglas</h2>
+  <h2>4. Reglas de nación y pelotón</h2>
   ${rulesRef.map(rr => `<div class="rule-ref"><span class="rule-name">${esc(rr.name)}</span>${rr.condition ? `<span class="condition"> (${esc(rr.condition)})</span>` : ''}<br><span class="muted">${esc(rr.desc)}</span></div>`).join('')}
 </section>
 ` : ''}
@@ -427,7 +498,7 @@ ${rulesRef.length > 0 ? `
         return `<div class="vehicle-block"><div class="vehicle-header"><span class="vehicle-name">${esc(v.name)}</span><span class="vehicle-cost">${v.cost}★${activeOpts.reduce((s,o)=>s+o.cost,0) ? ` (+${activeOpts.reduce((s,o)=>s+o.cost,0)}★)` : ''}</span></div><div class="vehicle-stats"><b>Blindaje:</b> ${v.armor} | <b>Armamento:</b> ${esc(weaponsHtml)}<br><b>Reglas:</b> ${esc(v.rules.join(', ') || '—')}<br><b>Opciones:</b> ${optHtml}</div></div>`;
       }).join('');
     }
-    function collectWeaponProfiles(t) {
+    function collectWeaponProfiles(t, state, D, E) {
       const ids = { commander_pistol: 'pst', commander_smg: 'smg', team_leader_smg: 'smg',
         team_leader_rifle: 'r', rifleman: 'r', recce_rifleman: 'r', recce_leader: 'r', smg: 'smg',
         sniper: 'sniper', bren_lmg: 'lmg', recce_bren: 'lmg', french_lmg: 'lmg', mg34_lmg: 'lmg',
@@ -437,15 +508,37 @@ ${rulesRef.length > 0 ? `
         dshk: 'hmg', browning_hmg: 'hmg', anti_tank_rifle: 'atr', vb1940: 'km',
         light_mortar: 'km', flamethrower: 'ft' };
       const profiles = new Map();
-      for (const f of t.units.flatMap(unit => unit.figures).filter(f => f.present)) {
-        const type = f.rifleSwap ? 'rifleman' : f.smg ? 'smg' : f.type;
-        const profile = window.VFV_WEAPON_PROFILES?.[ids[type]];
-        if (!profile) continue;
-        const germanLmg = type === 'mg34_lmg';
+      function add(id, germanLmg = false, mounted = false) {
+        const profile = window.VFV_WEAPON_PROFILES?.[id];
+        if (!profile) return;
+        const notes = profile.notes || '';
+        const abilities = Object.keys(ability).filter(key => notes.includes(key));
+        if (mounted) {
+          for (const key of ['Carriage', 'Shield', 'Heavy Weapon', 'Cumbersome', 'Ammo Bearers']) {
+            const index = abilities.indexOf(key);
+            if (index !== -1) abilities.splice(index, 1);
+          }
+        }
+        if (profile.he !== '—') abilities.push('HE');
+        if (id === 'sniper') abilities.push('SNIPER');
+        const detail = Object.keys(ability).reduce((value, key) => value.replaceAll(key, ability[key][0]), notes);
         const power = germanLmg ? '2d6 + 2d8' : profile.firepower;
         const stats = [profile.range + ' · ' + power, profile.he !== '—' ? 'HE ' + profile.he : '',
-          profile.at !== '—' ? 'AT ' + profile.at : '', profile.notes].filter(Boolean).join(' · ');
-        profiles.set(germanLmg ? 'mg34_lmg' : profile.id, { name: germanLmg ? 'MG34 (LMG alemana)' : profile.name, stats });
+          profile.at !== '—' ? 'AT ' + profile.at : '',
+          mounted ? 'Montada en vehículo' : detail].filter(Boolean).join(' · ');
+        profiles.set(germanLmg ? 'mg34_lmg' : id + (mounted ? '-veh' : ''), {
+          name: germanLmg ? 'MG34 (LMG alemana)' : profile.name, stats, abilities,
+        });
+      }
+      for (const unit of t.units) {
+        for (const f of unit.figures.filter(f => f.present)) {
+          const type = f.rifleSwap ? 'rifleman' : f.smg ? 'smg' : f.type;
+          add(ids[type] || weaponFromLabel(unit.name), type === 'mg34_lmg');
+        }
+      }
+      for (const [key, options] of Object.entries(state.vehicles)) {
+        const vehicle = D.DIVISIONAL_VEHICLES.find(v => v.id === key);
+        if (vehicle) E.weapons(vehicle, options).forEach(name => add(weaponFromLabel(name), false, true));
       }
       return [...profiles.values()];
     }
