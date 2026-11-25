@@ -127,7 +127,7 @@
             <div><span>Huecos grises libres</span><b id="sumGreyFree">8</b></div>
             <div><span>Huecos grises ocupados</span><b id="sumGreyUsed">0</b></div>
           </div>
-          <div class="toolbar-row list-actions"><button class="btn primary" id="exportList" type="button">Exportar lista</button><button class="btn" id="resetList" type="button">Reiniciar lista</button></div>
+          <div class="toolbar-row list-actions"><button class="btn primary" id="exportList" type="button">Exportar lista</button><button class="btn" id="exportPdf" type="button">Exportar PDF</button><button class="btn" id="resetList" type="button">Reiniciar lista</button></div>
           <p id="saveStatus" class="note-line" role="status"></p>
           <details class="card list-detail"><summary>Ver desglose por equipos y figuras</summary><pre id="listOutput"></pre></details>
         </section>
@@ -247,6 +247,237 @@
         return '<p class="diamond-status" role="status">Pago de 1♦: <b>' + paid.length + '/2 figuras ' + (force ? 'retiradas de la fuerza' : 'reservadas de refuerzos') + '</b>.</p><div class="figure-grid payment-figures">' +
           paid.map(f => figureHTML(f, { status: force ? 'Retirada ♦' : 'Pago ♦' })).join('') + '</div>';
       }).join('') + '</div>';
+    }
+    function exportPdf(E, state, data, rosterId, rosterName, nation, period, year, campaign, demo) {
+      const t = E.calculate(state);
+      if (t.errors.length) {
+        if (!confirm('La lista tiene errores de validación:\n' + t.errors.join('\n') + '\n\n¿Exportar de todos modos?')) return;
+      }
+      const html = generatePdfHtml(t, state, D, E, rosterName, nation, period, year, campaign);
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 250);
+    }
+    function generatePdfHtml(t, state, D, E, rosterName, nation, period, year, campaign) {
+      const weaponProfiles = collectWeaponProfiles(t, D, E);
+      const rulesRef = collectRulesRef(t, state, D, E);
+      const totalMinis = t.minis;
+      const coreMinis = t.core;
+      const fireMinis = t.fire;
+      const reinfMinis = t.reinforcements;
+      const vehCount = t.vehicles;
+      const totalCost = t.stars;
+      const diamonds = t.diamonds;
+      const diamondPaid = t.diamondPaid;
+      const budget = t.budget;
+      const rem = budget - t.stars;
+      const title = `${rosterName} — ${nation} · ${period} (${year})`;
+      const subtitle = `Presupuesto ${budget}★ · Coste ${t.stars}★ · Disponible ${budget - t.stars}★`;
+      let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${esc(rosterName)} — Orden de Batalla</title>
+<style>
+@page { size: A4; margin: 18mm; }
+* { box-sizing: border-box; }
+body { font-family: "Archivo", system-ui, sans-serif; font-size: 11px; line-height: 1.45; color: #1a1a1a; margin: 0; }
+h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; color: #1a1a1a; }
+h2 { font-size: 15px; font-weight: 700; margin: 18px 0 6px; color: #2c3e50; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
+h3 { font-size: 12px; font-weight: 700; margin: 10px 0 4px; color: #34495e; }
+h4 { font-size: 11px; font-weight: 600; margin: 8px 0 3px; color: #555; }
+p, li { margin: 3px 0; }
+.small { font-size: 10px; color: #555; }
+.muted { color: #666; }
+.bold { font-weight: 700; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #2c3e50; }
+.header-left h1 { margin: 0; font-size: 22px; }
+.header-left .subtitle { color: #555; font-size: 11px; margin-top: 2px; }
+.header-right { text-align: right; font-size: 11px; color: #444; }
+.section { page-break-inside: avoid; margin-bottom: 14px; }
+.unit-block { margin-bottom: 10px; }
+.unit-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.unit-name { font-weight: 700; font-size: 12px; }
+.unit-meta { font-size: 10px; color: #666; }
+.team-name { font-weight: 600; font-size: 11px; color: #333; margin: 6px 0 3px; }
+.figure-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 2px 0 2px 8px; font-size: 10px; }
+.figure-token { display: inline-flex; align-items: center; gap: 4px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 2px 6px; font-size: 10px; }
+.figure-token.leader { border-color: #3498db; background: #eaf4fc; }
+.figure-token.commander { border-color: #e74c3c; background: #fdeaea; }
+.weapon { font-family: monospace; font-size: 9px; color: #555; }
+.vehicle-block { margin: 8px 0; padding: 8px; background: #fafafa; border: 1px solid #eee; border-radius: 4px; }
+.vehicle-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.vehicle-name { font-weight: 700; font-size: 11px; }
+.vehicle-cost { color: #27ae60; font-weight: 700; }
+.vehicle-stats { font-size: 10px; color: #555; line-height: 1.5; }
+.weapon-profile { margin: 6px 0; padding: 6px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 3px; }
+.weapon-name { font-weight: 700; font-size: 11px; margin-bottom: 2px; }
+.weapon-stats { font-size: 10px; color: #444; line-height: 1.5; }
+.rule-ref { margin: 4px 0 4px 12px; font-size: 10px; color: #444; }
+.rule-name { font-weight: 700; }
+.condition { font-style: italic; color: #777; font-size: 10px; }
+.page-break { page-break-before: always; }
+table { width: 100%; border-collapse: collapse; font-size: 10px; margin: 6px 0; }
+th, td { border: 1px solid #ddd; padding: 3px 6px; text-align: left; }
+th { background: #f0f0f0; font-weight: 700; }
+td { background: #fafafa; }
+.cost-star { color: #f39c12; font-weight: 700; }
+.cost-diamond { color: #e74c3c; font-weight: 700; }
+.note { font-size: 9px; color: #888; font-style: italic; }
+hr { border: 0; border-top: 1px solid #ddd; margin: 10px 0; }
+@media print {
+  @page { margin: 18mm; }
+  body { font-size: 10.5px; }
+  .no-print { display: none !important; }
+}
+</style></head><body>
+<div class="header">
+  <div class="header-left">
+    <h1>${esc(rosterName)}</h1>
+    <div class="subtitle">${esc(nation)} · ${esc(period)} (${year}) · Campaña: ${esc(campaign)}</div>
+  </div>
+  <div class="header-right">
+    <div><span class="bold">Presupuesto:</span> ${budget}★</div>
+    <div><span class="bold">Coste total:</span> ${t.stars}★${diamonds ? ` + ${diamonds}♦` : ''}</div>
+    <div><span class="bold">Disponible:</span> ${budget - t.stars}★</div>
+  </div>
+</div>
+
+<hr>
+
+<section class="section">
+  <h2>1. Núcleo y apoyos orgánicos</h2>
+  ${renderUnitsSection(t, D, E, state, 'core')}
+  ${renderUnitsSection(t, D, E, state, 'fire')}
+</section>
+
+${vehCount > 0 ? `
+<hr>
+<section class="section">
+  <h2>2. Apoyo divisional</h2>
+  ${renderVehiclesSection(t, state, D, E)}
+</section>
+` : ''}
+
+${weaponProfiles.length > 0 ? `
+<hr>
+<section class="section page-break">
+  <h2>3. Referencia de perfiles de armas</h2>
+  ${weaponProfiles.map(wp => `<div class="weapon-profile"><div class="weapon-name">${esc(wp.name)}</div><div class="weapon-stats">${wp.stats}</div></div>`).join('')}
+</section>
+` : ''}
+
+${rulesRef.length > 0 ? `
+<hr>
+<section class="section page-break">
+  <h2>4. Referencia de reglas</h2>
+  ${rulesRef.map(rr => `<div class="rule-ref"><span class="rule-name">${esc(rr.name)}</span>${rr.condition ? `<span class="condition"> (${esc(rr.condition)})</span>` : ''}<br><span class="muted">${esc(rr.desc)}</span></div>`).join('')}
+</section>
+` : ''}
+
+<hr>
+<div class="note">Generado por VFV Reglas — Orden de Batalla. ${new Date().toLocaleDateString('es-ES')}.</div>
+</body></html>`;
+      return html;
+    }
+    function renderUnitsSection(t, D, E, state, type) {
+      const units = type === 'core'
+        ? t.units.slice(0, D.CORE_UNITS.length)
+        : t.units.slice(D.CORE_UNITS.length).filter(u => u.support);
+      return units.map(u => {
+        const isElite = state.elite || D.ALWAYS_ELITE;
+        const isRecruit = state.recruit;
+        const experience = isElite ? ' (Élite)' : isRecruit ? ' (Recluta)' : '';
+        const transportsHtml = u.transportSlots.length ? u.transportSlots.map(s => `Transporte: ${esc(s.selected.name)} (${s.selected.cost}★)`).join('; ') : '';
+        const figuresHtml = u.figures.filter(f => f.present).map(f => {
+          const weapon = f.rifleSwap ? 'Fusil' : f.smg ? 'Subfusil' : (D.FIGURE_TYPES[f.type]?.name || f.type);
+          const cls = f.leader ? 'leader' : f.type === 'commander_pistol' ? 'commander' : '';
+          return `<span class="figure-token ${cls}">${esc(D.FIGURE_TYPES[f.type]?.name || f.type)}: <span class="weapon">${esc(weapon)}</span></span>`;
+        }).join(' ');
+        return `<div class="unit-block"><div class="unit-header"><span class="unit-name">${esc(u.name)}${experience}</span><span class="unit-meta">${u.initial}→${u.max} minis · ${transportsHtml || 'Sin transporte'}</span></div><div class="team-name">${esc(u.teams.map(t => t.name).join(' + '))}</div><div class="figure-row">${figuresHtml || '<span class="muted">Sin figuras</span>'}</div></div>`;
+      }).join('');
+    }
+    function renderVehiclesSection(t, state, D, E) {
+      return Object.entries(state.vehicles).map(([id, opts]) => {
+        const v = D.DIVISIONAL_VEHICLES.find(x => x.id === id);
+        if (!v) return '';
+        const activeOpts = opts.filter(o => v.options.some(vo => vo.id === o));
+        const optHtml = activeOpts.length ? activeOpts.map(o => `<li>${esc(o.name)} (+${o.cost}★)</li>`).join('') : 'Sin opciones';
+        const weaponsHtml = E.weapons(v, opts).join(', ') || 'Sin armamento';
+        return `<div class="vehicle-block"><div class="vehicle-header"><span class="vehicle-name">${esc(v.name)}</span><span class="vehicle-cost">${v.cost}★${activeOpts.reduce((s,o)=>s+o.cost,0) ? ` (+${activeOpts.reduce((s,o)=>s+o.cost,0)}★)` : ''}</span></div><div class="vehicle-stats"><b>Blindaje:</b> ${v.armor} | <b>Armamento:</b> ${esc(weaponsHtml)}<br><b>Reglas:</b> ${esc(v.rules.join(', ') || '—')}<br><b>Opciones:</b> ${optHtml}</div></div>`;
+      }).join('');
+    }
+    function collectWeaponProfiles(t, D, E) {
+      const seen = new Set();
+      const profiles = [];
+      t.units.forEach(u => {
+        u.figures.filter(f => f.present).forEach(f => {
+          const weaponType = f.rifleSwap ? 'rifleman' : f.smg ? 'smg' : f.type;
+          if (!seen.has(weaponType) && D.FIGURE_TYPES[weaponType]) {
+            seen.add(weaponType);
+            const wp = D.FIGURE_TYPES[weaponType];
+            const stats = formatWeaponStats(weaponType, D, E, u.support);
+            profiles.push({ name: wp.name, stats });
+          }
+        });
+        u.transportSlots.forEach(slot => {
+          if (slot.selected) {
+            const veh = D.DIVISIONAL_VEHICLES.find(v => v.id === slot.selected.id);
+            if (veh && veh.weapons) {
+              veh.weapons.forEach(w => {
+                if (!seen.has('vehicle:' + w)) {
+                  seen.add('vehicle:' + w);
+                  profiles.push({ name: w, stats: 'Arma de vehículo' });
+                }
+              });
+            }
+          });
+      });
+      if (state.equipment.eq_smg && state.smg > 0 && !seen.has('smg')) {
+        seen.add('smg');
+        profiles.push({ name: 'Subfusil (SMG)', stats: 'Conversión de fusil a subfusil' });
+      }
+      return profiles;
+    }
+    function formatWeaponStats(type, D, E, isSupport) {
+      const wp = D.FIGURE_TYPES[type];
+      if (!wp) return '';
+      const category = wp.category;
+      let parts = [`Categoría: ${category}`];
+      if (category === 'lmg') parts.push('2d6 hasta L; d6 hasta 2L');
+      else if (category === 'mmg') parts.push('3d6 hasta L; 2d6 hasta 2L; d6 hasta 3L');
+      else if (category === 'at_rifle') parts.push('1d6 hasta L; Factor AT E');
+      else if (category === 'sniper') parts.push('1d12+ hasta 3L');
+      else if (category === 'rifleman') parts.push('1d6 hasta 2L');
+      else if (category === 'leader') parts.push('1d6 hasta 2L');
+      else if (category === 'commander') parts.push('1d6 hasta 2L');
+      else if (category === 'special') parts.push('1d6 hasta L');
+      if (wp.name === 'Bren' || wp.name === 'LMG Bren') parts.push('Cumbersome: no puede correr');
+      if (wp.name && wp.name.includes('Vickers')) parts.push('Cumbersome; Unlimber obligatorio; HE');
+      return parts.join(' | ');
+    }
+    function collectRulesRef(t, state, D, E) {
+      const rules = [];
+      const nationRules = {
+        'Gran Bretaña': { name: 'Estoicos', desc: 'Una vez por turno, cuando un equipo británico sea objetivo de un asalto, antes de resolverlo tira 1D12; con éxito retira un marcador de activación de esa unidad.', cond: null },
+        'Gran Bretaña': { name: 'Preparación', desc: 'Después del despliegue y antes del primer turno tira 1D8; con éxito obtiene un bombardeo preparatorio.', cond: null },
+        'Francia': { name: 'Furia', desc: 'Al declarar un asalto, tira 1D12; si aciertas ganas +1★ en la reserva de asalto.', cond: null },
+        'Alemania': { name: 'Iniciativa', desc: 'En empate de iniciativa, el jugador alemán puede repetir la tirada y quedarse con el segundo resultado.', cond: null },
+        'Italia': { name: 'Avanti!', desc: 'Una vez por turno, tras revelar carta, si tu iniciativa es inferior puedes tirar 1D12; con éxito tu carta cuenta como superior.', cond: null },
+        'URSS': { name: 'Comisario / Ura!', desc: 'Comisario gratis en el núcleo; Ura! da +1★ en asalto si hay un comisario a M.', cond: null },
+      };
+      Object.entries(nationRules).forEach(([nat, rule]) => {
+        if (t.units.some(u => u.name.includes(nat) || true)) {
+          rules.push({ name: rule.name, desc: rule.desc, cond: rule.cond });
+        }
+      });
+      if (state.elite || D.ALWAYS_ELITE) rules.push({ name: 'Élite', desc: 'Toda la infantería elegible (núcleo + apoyos orgánicos) gana +3★ global. No afecta a vehículos divisionales.', cond: 'Coste 3★ global' });
+      if (state.smg > 0) rules.push({ name: 'Conversión a SMG', desc: 'Retirar hasta 2 figuras (fusileros/servidores). Por cada una, hasta 2 fusiles → subfusiles. Máx 4 SMG totales.', cond: `${state.removed} figs retiradas, ${state.smg} conversiones` });
+      if (t.diamonds > 0) rules.push({ name: 'Pago de rombo (♦)', desc: 'Cada ♦ requiere descartar 2 figuras de la fuerza o 2 fusileros de refuerzo sin colocar. El francotirador cuesta 1♦.', cond: `${t.diamonds}♦ = ${t.diamondPaid} figuras` });
+      if (state.motoModule) rules.push({ name: 'Reconocimiento motorizado', desc: 'Módulo base 1★ (3 figs, 1 veh). Módulo opcional +1★ (2º veh, +2 figs + 1 hueco). Puede cambiar Bren→fusilero (-1★).', cond: state.brenSwap ? 'Bren→fusilero activo' : null });
+      if (state.equipment.eq_smg && state.smg > 0) rules.push({ name: 'Subfusiles', desc: 'Hasta 2 figuras retiradas → 2 fusiles→SMG por figura. Máx 4 SMG.', cond: `${state.removed} retiradas, ${state.smg} SMG` });
+      if (state.divisionalBonus) rules.push({ name: 'Bonificación divisional', desc: 'Primer apoyo divisional +1★ (o según regla).', cond: null });
+      if (state.recruit) rules.push({ name: 'Recluta', desc: 'Coste 0★ para el apoyo especificado; -1◇ en reclutas.', cond: null });
+      if (state.equipment.eq_elite) rules.push({ name: 'Élite', desc: 'Infantería núcleo + apoyos orgánicos +3★. No vehículos división.', cond: 'Coste 3★' });
+      return rules;
     }
     function render() {
       const openAssignments = [...container.querySelectorAll('details.assignment-alternative[open]')].map(el => el.dataset.purchase);
@@ -470,6 +701,7 @@
       a.href = url; a.download = `lista-${filename}${options.demo ? '-demo' : ''}.txt`; a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
+    $('exportPdf').addEventListener('click', () => exportPdf(E, state, data, rosterId, rosterName, nation, period, year, campaign, options.demo));
     render();
     return container;
   }
