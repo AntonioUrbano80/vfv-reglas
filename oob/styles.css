@@ -131,3 +131,31 @@ body[data-view="ejercito"] .main { max-width: 1180px; }
 .oob-demo .transport-disclosure {
   margin-block: .4rem;
 }
+.oob-demo #coreList { grid-template-columns: minmax(0, 1fr); }
+.oob-demo .roster-team { border-top: 1px solid var(--filete); margin-top: .65rem; }
+.oob-demo .roster-team .team-name { margin: .65rem 0 .4rem; }
+.oob-demo .roster-team .figure-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+.oob-demo .roster-team .figure-grid > * { width: 68px; max-width: 100%; }
+.oob-demo .figure-token .figure-silhouette {
+  position: relative;
+  width: 44px;
+  height: 50px;
+  border-radius: 4px;
+  box-shadow: none;
+}
+.oob-demo .figure-silhouette b {
+  position: absolute;
+  right: 3px;
+  top: 2px;
+  font-size: 10px;
+  line-height: 1;
+}
+.oob-demo .empty .figure-silhouette svg,
+.oob-demo .removed .figure-silhouette svg { opacity: .3; }
+.oob-demo .empty .figure-silhouette b,
+.oob-demo .removed .figure-silhouette b { font-size: 16px; }
+.oob-demo .figure-token.chosen .figure-silhouette { outline: 2px solid var(--rojo); outline-offset: 2px; }

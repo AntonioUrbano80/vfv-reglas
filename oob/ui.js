@@ -88,14 +88,14 @@
         <div id="validationErrors" class="validation-errors warn" role="status" aria-live="polite"></div>
         <section id="nucleo" class="builder-section">
           <h2 class="sec-head">Núcleo obligatorio <span class="n">Incluido · 0★</span></h2>
-          <p class="section-intro">Toca un círculo gris para colocar un refuerzo comprado. Toca un refuerzo colocado para moverlo o devolverlo al banco.</p>
+          <p class="section-intro">Toca un hueco gris para colocar un refuerzo comprado. Toca un refuerzo colocado para moverlo o devolverlo al banco.</p>
           <div class="figure-legend" aria-label="Leyenda de figuras"><span><i class="legend-dot commander">C</i> Comandante</span><span><i class="legend-dot leader">J</i> Jefe</span><span><i class="legend-dot">•</i> Soldado</span><span><i class="legend-dot empty">+</i> Refuerzo</span></div>
           <p id="placementStatus" class="placement-status" role="status" aria-live="polite"></p>
           <div id="coreList" class="core-grid"></div>
         </section>
         <section id="refuerzos" class="builder-section">
           <h2 class="sec-head">Refuerzos <span class="n" id="reinforcementCount">0/4 compras</span></h2>
-          <p class="section-intro">Cada compra añade figuras a tu banco. Después toca los círculos grises del núcleo o de los apoyos para colocarlas. También puedes seleccionar una figura del banco y elegir su hueco.</p>
+          <p class="section-intro">Cada compra añade figuras a tu banco. Después toca los huecos grises del núcleo o de los apoyos para colocarlas. También puedes seleccionar una figura del banco y elegir su hueco.</p>
           <div class="controls purchase-controls" id="reinforcementBuy"></div>
           <div id="reinforcementsList" class="reinforcement-grid"></div>
         </section>
@@ -164,15 +164,21 @@
       mg34_lmg: 'MG34', mg34_mmg: 'MG34 en trípode', howitzer: 'Obús', smg: 'SMG',
       breda_lmg: 'Breda M1930', breda_mmg: 'Breda M1937', autocannon: 'Breda de 20 mm',
       dp28: 'DP-28', maxim: 'Maxim', dshk: 'DShK', commissar: 'Pistola' };
+    function silhouette(role, mark = '') {
+      return '<span class="figure-circle figure-silhouette ' + role + '" aria-hidden="true">' +
+        '<svg viewBox="0 0 32 42" width="28" height="36" focusable="false"><path fill="currentColor" d="M11 8a5 5 0 0 1 10 0v2H11zM13 11h6v4l4 2 4 7-3 2-4-5v7l3 11h-5l-2-9-2 9H9l3-11v-7l-4 5-3-2 4-7 4-2z"/><path d="m7 27 19-12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>' +
+        (mark ? '<b>' + mark + '</b>' : '') + '</span>';
+    }
     function figureHTML(f, config = {}) {
       const commander = ['commander_pistol', 'commander_smg'].includes(f.type);
       const leader = f.leader || D.FIGURE_TYPES[f.type]?.category === 'leader';
       const empty = !f.present && !f.removedFor;
       const status = config.status || (f.removedFor ? 'Retirada ' + f.removedFor : empty ? 'Hueco gris' : f.reinforcement ? 'Ref. ' + (f.purchase + 1) : commander ? 'Comandante' : leader ? 'Jefe' : 'Soldado');
-      const mark = f.removedFor ? '×' : empty ? '+' : commander ? 'C' : leader ? 'J' : '•';
+      const role = commander ? 'commander' : leader ? 'leader' : 'soldier';
+      const mark = f.removedFor ? '×' : empty ? '+' : commander ? 'C' : leader ? 'J' : '';
       const label = [f.unit, f.team, D.FIGURE_TYPES[f.type]?.name || f.type, status].filter(Boolean).join(' · ');
       const tag = config.button ? 'button' : 'div';
-      return `<${tag} ${config.button ? 'type="button"' : 'role="img"'} class="figure-token ${commander ? 'commander' : leader ? 'leader' : 'soldier'} ${empty ? 'empty' : 'filled'} ${f.removedFor ? 'removed' : ''} ${config.selected ? 'chosen' : ''}" ${config.attributes || ''} ${config.disabled ? 'disabled' : ''} aria-label="${esc(label)}" ${config.pressed === undefined ? '' : `aria-pressed="${config.pressed}"`} title="${esc(label)}"><span class="figure-circle" aria-hidden="true">${mark}</span><span class="figure-weapon">${esc(f.rifleSwap ? 'Fusil' : f.smg ? 'SMG' : weapons[f.type] || f.type)}</span><span class="figure-status">${esc(status)}</span></${tag}>`;
+      return `<${tag} ${config.button ? 'type="button"' : 'role="img"'} class="figure-token ${commander ? 'commander' : leader ? 'leader' : 'soldier'} ${empty ? 'empty' : 'filled'} ${f.removedFor ? 'removed' : ''} ${config.selected ? 'chosen' : ''}" ${config.attributes || ''} ${config.disabled ? 'disabled' : ''} aria-label="${esc(label)}" ${config.pressed === undefined ? '' : `aria-pressed="${config.pressed}"`} title="${esc(label)}">${silhouette(role, mark)}<span class="figure-weapon">${esc(f.rifleSwap ? 'Fusil' : f.smg ? 'SMG' : weapons[f.type] || f.type)}</span><span class="figure-status">${esc(status)}</span></${tag}>`;
     }
     function unitHTML(unit) {
       const transports = unit.transportSlots.map((slot, index) => {
@@ -184,8 +190,8 @@
       }).join('');
       const recon = unit.reconLmg ? button(state.reconSwap === unit.id ? 'Restaurar LMG (+1★)' : 'LMG → fusilero (−1★)', 'reconSwap', unit.id) : '';
       const skis = D.SKIS ? button(unit.skis ? 'Quitar esquís' : 'Poner esquís', 'skis', unit.id) : '';
-      return `<div class="unit-card card core"><h3>${esc(unit.name)}</h3>${transports}${recon}${skis}${[...new Set(unit.figures.map(f => f.team))].map(team =>
-        `<p class="team-name">${esc(team)}</p><div class="figure-grid">${unit.figures.filter(f => f.team === team).map(f => {
+      return `<div class="unit-card card core roster-squad"><h3>${esc(unit.name)}</h3>${transports}${recon}${skis}${[...new Set(unit.figures.map(f => f.team))].map(team =>
+        `<section class="roster-team"><h4 class="team-name">${esc(team)}</h4><div class="figure-grid">${unit.figures.filter(f => f.team === team).map(f => {
           const source = pickedFigure && renderTotals.pool.find(p => p.key === pickedFigure);
           const selected = source && !f.present && E.compatible(source, f);
           const token = figureHTML(f, { button: !f.fixed && !f.removedFor, selected,
@@ -193,7 +199,7 @@
           const original = weapons[f.type] || f.type;
           return f.present && E.canSwapToRifle(f)
             ? '<div>' + token + button(f.rifleSwap ? 'Restaurar ' + original : original + ' → fusil', 'rifleSwaps', f.key) + '</div>' : token;
-        }).join('')}</div>`).join('')}</div>`;
+        }).join('')}</div></section>`).join('')}</div>`;
     }
     function bankHTML(f) {
       return figureHTML({ ...f, present: true, unit: 'Refuerzo ' + (f.purchase + 1) }, {
@@ -297,7 +303,14 @@ p, li { margin: 3px 0; }
 .header-left h1 { margin: 0; font-size: 22px; }
 .header-left .subtitle { color: #555; font-size: 11px; margin-top: 2px; }
 .header-right { text-align: right; font-size: 11px; color: #444; }
-.section { page-break-inside: avoid; margin-bottom: 14px; }
+.section { margin-bottom: 14px; }
+h2, h3, h4 { break-after: avoid; }
+.figure-row { break-inside: avoid; }
+.figure-row .figure-token { flex-direction: column; width: 16mm; text-align: center; overflow-wrap: anywhere; }
+.figure-silhouette { position: relative; display: inline-grid; place-items: center; width: 13mm; height: 13mm; color: #424b2f; }
+.figure-silhouette.leader { color: #263963; }
+.figure-silhouette.commander { color: #881f23; }
+.figure-silhouette b { position: absolute; right: 0; top: 0; font: bold 8px system-ui; }
 .unit-block { margin-bottom: 10px; }
 .unit-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
 .unit-name { font-weight: 700; font-size: 12px; }
@@ -396,8 +409,9 @@ ${rulesRef.length > 0 ? `
         const teams = [...new Set(figures.map(f => f.team))].map(team =>
           '<h4>' + esc(team) + '</h4><div class="figure-row">' + figures.filter(f => f.team === team).map(f => {
             const weapon = f.rifleSwap ? 'Fusil' : f.smg ? 'SMG' : weapons[f.type] || D.FIGURE_TYPES[f.type]?.name || f.type;
-            const role = f.type.startsWith('commander_') ? 'Comandante' : f.leader ? 'Jefe' : 'Soldado';
-            return '<span class="figure-token">' + role + ' · ' + esc(weapon) + '</span>';
+            const role = f.type.startsWith('commander_') ? 'commander' : f.leader || D.FIGURE_TYPES[f.type]?.category === 'leader' ? 'leader' : 'soldier';
+            const mark = role === 'commander' ? 'C' : role === 'leader' ? 'J' : '';
+            return '<span class="figure-token ' + role + '">' + silhouette(role, mark) + '<strong>' + esc(weapon) + '</strong></span>';
           }).join(' ') + '</div>').join('');
         return '<div class="unit-block"><h3>' + esc(u.name) + experience + '</h3>' +
           (transports.length ? '<p>Transporte · ' + transports.join(', ') + '</p>' : '') + teams + '</div>';
@@ -448,10 +462,10 @@ ${rulesRef.length > 0 ? `
       $('coreList').innerHTML = t.units.slice(0, D.CORE_UNITS.length).map(unitHTML).join('');
       $('reinforcementCount').textContent = `${state.purchases.length}/${D.MAX_REINFORCEMENT_PURCHASES} compras · ${t.unused} sin colocar`;
       $('reinforcementBuy').innerHTML = D.REINFORCEMENT_OPTIONS.map(o => button(`+ ${o.name} (${o.cost}★)`, 'reinforce', o.id)).join('');
-      $('placementStatus').innerHTML = esc(placementMessage || (pickedFigure ? 'Figura seleccionada. Toca un círculo gris compatible para colocarla.' : `${t.unused} ${t.unused === 1 ? 'figura comprada disponible' : 'figuras compradas disponibles'} para colocar.`)) +
+      $('placementStatus').innerHTML = esc(placementMessage || (pickedFigure ? 'Figura seleccionada. Toca un hueco gris compatible para colocarla.' : `${t.unused} ${t.unused === 1 ? 'figura comprada disponible' : 'figuras compradas disponibles'} para colocar.`)) +
         (pickedFigure ? ' <button type="button" class="btn" data-clear-pick>Cancelar selección</button>' : '');
       $('reinforcementsList').innerHTML = state.purchases.map((id, i) => `<article class="unit-card card"><div class="purchase-heading"><span class="pill">Refuerzo ${i + 1} · 1★</span>${button('Eliminar compra ' + (i + 1), 'unreinforce', i)}</div><h3>${esc(D.REINFORCEMENT_OPTIONS.find(o => o.id === id).name)}</h3><p class="note-line">${t.pool.filter(f => f.purchase === i && f.status === 'placed').length} asignadas · ${t.pool.filter(f => f.purchase === i && f.status === 'payment').length} para ♦ · ${t.pool.filter(f => f.purchase === i && f.status === 'unused').length} sin colocar</p><div class="figure-grid bank-figures">${t.pool.filter(f => f.purchase === i).map(bankHTML).join('')}</div><details class="assignment-alternative" data-purchase="${i}"><summary>Asignar por nombre</summary>${t.pool.filter(f => f.purchase === i).map(f => assignmentHTML(f, t)).join('')}</details></article>`).join('') ||
-        '<p class="empty-bank">Compra un refuerzo. Sus figuras aparecerán aquí listas para colocar tocando los círculos grises.</p>';
+        '<p class="empty-bank">Compra un refuerzo. Sus figuras aparecerán aquí listas para colocar tocando los huecos grises.</p>';
       container.querySelectorAll('details.assignment-alternative').forEach(el => { el.open = openAssignments.includes(el.dataset.purchase); });
       $('fireSupportList').innerHTML = D.FIRE_SUPPORT.filter(f => f.type !== 'modifier').map(f => {
         const count = state.support[f.id] || 0;
@@ -570,7 +584,7 @@ ${rulesRef.length > 0 ? `
         state = next; closeDialog(); persist(); render(); return;
       }
       if (b.hasAttribute('data-move-figure')) {
-        pickedFigure = dialogState.source; placementMessage = 'Elige otro círculo gris para mover este refuerzo.';
+        pickedFigure = dialogState.source; placementMessage = 'Elige otro hueco gris para mover este refuerzo.';
         closeDialog(); render(); $('nucleo').scrollIntoView({ block: 'start' }); return;
       }
       if (b.hasAttribute('data-return-figure')) {
@@ -620,7 +634,7 @@ ${rulesRef.length > 0 ? `
       const next = E.change(state, b.dataset.action, b.dataset.id, b.dataset.value);
       if (next === state) return;
       state = next;
-      if (b.dataset.action === 'reinforce') placementMessage = 'Refuerzo comprado. Toca los círculos grises para colocar sus figuras.';
+      if (b.dataset.action === 'reinforce') placementMessage = 'Refuerzo comprado. Toca los huecos grises para colocar sus figuras.';
       if (b.dataset.action === 'unreinforce') { pickedFigure = ''; placementMessage = 'Compra eliminada. Las demás figuras conservan su destino.'; }
       persist(); render();
     });
