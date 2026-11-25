@@ -103,16 +103,16 @@
           <h2 class="sec-head">Equipamiento y experiencia</h2>
           <div class="card" id="equipmentList"></div>
         </section>
-        <section id="apoyos" class="builder-section">
-          <h2 class="sec-head">Apoyos orgánicos</h2>
+        <details id="apoyos" class="builder-section builder-disclosure">
+          <summary>Apoyos orgánicos <span id="organicCount"></span></summary>
           <p class="section-intro">Cuando un apoyo cuesta 1♦, elige dos figuras de la fuerza o dos fusileros de refuerzo sin colocar.</p>
           <div id="fireSupportList" class="support-grid"></div>
-        </section>
-        <section id="vehiculos" class="builder-section">
-          <h2 class="sec-head">Apoyo divisional</h2>
+        </details>
+        <details id="vehiculos" class="builder-section builder-disclosure">
+          <summary>Apoyo divisional <span id="divisionalCount"></span></summary>
           <div class="controls" id="divisionalBonus"></div>
           <div id="divisionalGrid" class="vehicle-grid"></div>
-        </section>
+        </details>
         <section id="resumen" class="builder-section">
           <h2 class="sec-head">Tu lista</h2>
           <div class="summary card" id="summary">
@@ -175,9 +175,13 @@
       return `<${tag} ${config.button ? 'type="button"' : 'role="img"'} class="figure-token ${commander ? 'commander' : leader ? 'leader' : 'soldier'} ${empty ? 'empty' : 'filled'} ${f.removedFor ? 'removed' : ''} ${config.selected ? 'chosen' : ''}" ${config.attributes || ''} ${config.disabled ? 'disabled' : ''} aria-label="${esc(label)}" ${config.pressed === undefined ? '' : `aria-pressed="${config.pressed}"`} title="${esc(label)}"><span class="figure-circle" aria-hidden="true">${mark}</span><span class="figure-weapon">${esc(f.rifleSwap ? 'Fusil' : f.smg ? 'SMG' : weapons[f.type] || f.type)}</span><span class="figure-status">${esc(status)}</span></${tag}>`;
     }
     function unitHTML(unit) {
-      const transports = unit.transportSlots.map((slot, index) =>
-        `<div class="controls"><span>Transporte ${index + 1} · ${esc(slot.selected.name)}</span>` +
-        slot.options.filter(o => o.id !== slot.selected.id).map(o => button(`${o.name} · ${o.cost}★`, 'transport', slot.key, o.id)).join('') + '</div>').join('');
+      const transports = unit.transportSlots.map((slot, index) => {
+        const label = 'Transporte ' + (index + 1) + ' · ' + esc(slot.selected.name);
+        if (slot.options.length === 1) return '<p class="note-line">' + label + '</p>';
+        return '<details class="transport-disclosure" data-transport-slot="' + esc(slot.key) + '"><summary>' + label +
+          '</summary><div class="controls">' + slot.options.filter(o => o.id !== slot.selected.id).map(o =>
+            button(o.name + ' · ' + o.cost + '★', 'transport', slot.key, o.id)).join('') + '</div></details>';
+      }).join('');
       const recon = unit.reconLmg ? button(state.reconSwap === unit.id ? 'Restaurar LMG (+1★)' : 'LMG → fusilero (−1★)', 'reconSwap', unit.id) : '';
       const skis = D.SKIS ? button(unit.skis ? 'Quitar esquís' : 'Poner esquís', 'skis', unit.id) : '';
       return `<div class="unit-card card core"><h3>${esc(unit.name)}</h3>${transports}${recon}${skis}${[...new Set(unit.figures.map(f => f.team))].map(team =>
@@ -255,6 +259,7 @@
       }
       const html = generatePdfHtml(t, state, D, E, rosterName, nation, period, year, campaign);
       const printWindow = window.open('', '_blank');
+      if (!printWindow) { alert('Permite las ventanas emergentes para imprimir la lista.'); return; }
       printWindow.document.write(html);
       printWindow.document.close();
       printWindow.focus();
@@ -262,12 +267,12 @@
     }
     function generatePdfHtml(t, state, D, E, rosterName, nation, period, year, campaign) {
       const weaponProfiles = collectWeaponProfiles(t, D, E);
-      const rulesRef = collectRulesRef(t, state, D, E);
+      const rulesRef = state.antiTankAssault ? [{ name: 'Asalto anticarro', desc: 'Se aplica a los equipos de las escuadras.' }] : [];
       const totalMinis = t.minis;
       const coreMinis = t.core;
       const fireMinis = t.fire;
       const reinfMinis = t.reinforcements;
-      const vehCount = t.vehicles;
+      const vehCount = Object.keys(state.vehicles).length;
       const totalCost = t.stars;
       const diamonds = t.diamonds;
       const diamondPaid = t.diamondPaid;
@@ -361,7 +366,7 @@ ${weaponProfiles.length > 0 ? `
 <hr>
 <section class="section page-break">
   <h2>3. Referencia de perfiles de armas</h2>
-  ${weaponProfiles.map(wp => `<div class="weapon-profile"><div class="weapon-name">${esc(wp.name)}</div><div class="weapon-stats">${wp.stats}</div></div>`).join('')}
+  ${weaponProfiles.map(wp => `<div class="weapon-profile"><div class="weapon-name">${esc(wp.name)}</div><div class="weapon-stats">${esc(wp.stats)}</div></div>`).join('')}
 </section>
 ` : ''}
 
@@ -381,105 +386,57 @@ ${rulesRef.length > 0 ? `
     function renderUnitsSection(t, D, E, state, type) {
       const units = type === 'core'
         ? t.units.slice(0, D.CORE_UNITS.length)
-        : t.units.slice(D.CORE_UNITS.length).filter(u => u.support);
+        : t.units.slice(D.CORE_UNITS.length);
       return units.map(u => {
         const isElite = state.elite || D.ALWAYS_ELITE;
         const isRecruit = state.recruit;
         const experience = isElite ? ' (Élite)' : isRecruit ? ' (Recluta)' : '';
-        const transportsHtml = u.transportSlots.length ? u.transportSlots.map(s => `Transporte: ${esc(s.selected.name)} (${s.selected.cost}★)`).join('; ') : '';
-        const figuresHtml = u.figures.filter(f => f.present).map(f => {
-          const weapon = f.rifleSwap ? 'Fusil' : f.smg ? 'Subfusil' : (D.FIGURE_TYPES[f.type]?.name || f.type);
-          const cls = f.leader ? 'leader' : f.type === 'commander_pistol' ? 'commander' : '';
-          return `<span class="figure-token ${cls}">${esc(D.FIGURE_TYPES[f.type]?.name || f.type)}: <span class="weapon">${esc(weapon)}</span></span>`;
-        }).join(' ');
-        return `<div class="unit-block"><div class="unit-header"><span class="unit-name">${esc(u.name)}${experience}</span><span class="unit-meta">${u.initial}→${u.max} minis · ${transportsHtml || 'Sin transporte'}</span></div><div class="team-name">${esc(u.teams.map(t => t.name).join(' + '))}</div><div class="figure-row">${figuresHtml || '<span class="muted">Sin figuras</span>'}</div></div>`;
+        const transports = u.transportSlots.filter(slot => slot.selected.count !== 0).map(slot => esc(slot.selected.name));
+        const figures = u.figures.filter(f => f.present);
+        const teams = [...new Set(figures.map(f => f.team))].map(team =>
+          '<h4>' + esc(team) + '</h4><div class="figure-row">' + figures.filter(f => f.team === team).map(f => {
+            const weapon = f.rifleSwap ? 'Fusil' : f.smg ? 'SMG' : weapons[f.type] || D.FIGURE_TYPES[f.type]?.name || f.type;
+            const role = f.type.startsWith('commander_') ? 'Comandante' : f.leader ? 'Jefe' : 'Soldado';
+            return '<span class="figure-token">' + role + ' · ' + esc(weapon) + '</span>';
+          }).join(' ') + '</div>').join('');
+        return '<div class="unit-block"><h3>' + esc(u.name) + experience + '</h3>' +
+          (transports.length ? '<p>Transporte · ' + transports.join(', ') + '</p>' : '') + teams + '</div>';
       }).join('');
     }
     function renderVehiclesSection(t, state, D, E) {
       return Object.entries(state.vehicles).map(([id, opts]) => {
         const v = D.DIVISIONAL_VEHICLES.find(x => x.id === id);
         if (!v) return '';
-        const activeOpts = opts.filter(o => v.options.some(vo => vo.id === o));
+        const activeOpts = v.options.filter(o => opts.includes(o.id));
         const optHtml = activeOpts.length ? activeOpts.map(o => `<li>${esc(o.name)} (+${o.cost}★)</li>`).join('') : 'Sin opciones';
         const weaponsHtml = E.weapons(v, opts).join(', ') || 'Sin armamento';
         return `<div class="vehicle-block"><div class="vehicle-header"><span class="vehicle-name">${esc(v.name)}</span><span class="vehicle-cost">${v.cost}★${activeOpts.reduce((s,o)=>s+o.cost,0) ? ` (+${activeOpts.reduce((s,o)=>s+o.cost,0)}★)` : ''}</span></div><div class="vehicle-stats"><b>Blindaje:</b> ${v.armor} | <b>Armamento:</b> ${esc(weaponsHtml)}<br><b>Reglas:</b> ${esc(v.rules.join(', ') || '—')}<br><b>Opciones:</b> ${optHtml}</div></div>`;
       }).join('');
     }
-    function collectWeaponProfiles(t, D, E) {
-      const seen = new Set();
-      const profiles = [];
-      t.units.forEach(u => {
-        u.figures.filter(f => f.present).forEach(f => {
-          const weaponType = f.rifleSwap ? 'rifleman' : f.smg ? 'smg' : f.type;
-          if (!seen.has(weaponType) && D.FIGURE_TYPES[weaponType]) {
-            seen.add(weaponType);
-            const wp = D.FIGURE_TYPES[weaponType];
-            const stats = formatWeaponStats(weaponType, D, E, u.support);
-            profiles.push({ name: wp.name, stats });
-          }
-        });
-        u.transportSlots.forEach(slot => {
-          if (slot.selected) {
-            const veh = D.DIVISIONAL_VEHICLES.find(v => v.id === slot.selected.id);
-            if (veh && veh.weapons) {
-              veh.weapons.forEach(w => {
-                if (!seen.has('vehicle:' + w)) {
-                  seen.add('vehicle:' + w);
-                  profiles.push({ name: w, stats: 'Arma de vehículo' });
-                }
-              });
-            }
-          });
-      });
-      if (state.equipment.eq_smg && state.smg > 0 && !seen.has('smg')) {
-        seen.add('smg');
-        profiles.push({ name: 'Subfusil (SMG)', stats: 'Conversión de fusil a subfusil' });
+    function collectWeaponProfiles(t) {
+      const ids = { commander_pistol: 'pst', commander_smg: 'smg', team_leader_smg: 'smg',
+        team_leader_rifle: 'r', rifleman: 'r', recce_rifleman: 'r', recce_leader: 'r', smg: 'smg',
+        sniper: 'sniper', bren_lmg: 'lmg', recce_bren: 'lmg', french_lmg: 'lmg', mg34_lmg: 'lmg',
+        breda_lmg: 'lmg', dp28: 'lmg', finnish_lmg: 'lmg', bar: 'bar', polish_bar: 'bar', belgian_bar: 'bar',
+        vickers_mmg: 'mmg', mg34_mmg: 'mmg', hotchkiss_mmg: 'mmg', browning_mmg: 'mmg',
+        belgian_mmg: 'mmg', finnish_mmg: 'mmg', breda_mmg: 'mmg', maxim: 'mmg',
+        dshk: 'hmg', browning_hmg: 'hmg', anti_tank_rifle: 'atr', vb1940: 'km',
+        light_mortar: 'km', flamethrower: 'ft' };
+      const profiles = new Map();
+      for (const f of t.units.flatMap(unit => unit.figures).filter(f => f.present)) {
+        const type = f.rifleSwap ? 'rifleman' : f.smg ? 'smg' : f.type;
+        const profile = window.VFV_WEAPON_PROFILES?.[ids[type]];
+        if (!profile) continue;
+        const germanLmg = type === 'mg34_lmg';
+        const power = germanLmg ? '2d6 + 2d8' : profile.firepower;
+        const stats = [profile.range + ' · ' + power, profile.he !== '—' ? 'HE ' + profile.he : '',
+          profile.at !== '—' ? 'AT ' + profile.at : '', profile.notes].filter(Boolean).join(' · ');
+        profiles.set(germanLmg ? 'mg34_lmg' : profile.id, { name: germanLmg ? 'MG34 (LMG alemana)' : profile.name, stats });
       }
-      return profiles;
-    }
-    function formatWeaponStats(type, D, E, isSupport) {
-      const wp = D.FIGURE_TYPES[type];
-      if (!wp) return '';
-      const category = wp.category;
-      let parts = [`Categoría: ${category}`];
-      if (category === 'lmg') parts.push('2d6 hasta L; d6 hasta 2L');
-      else if (category === 'mmg') parts.push('3d6 hasta L; 2d6 hasta 2L; d6 hasta 3L');
-      else if (category === 'at_rifle') parts.push('1d6 hasta L; Factor AT E');
-      else if (category === 'sniper') parts.push('1d12+ hasta 3L');
-      else if (category === 'rifleman') parts.push('1d6 hasta 2L');
-      else if (category === 'leader') parts.push('1d6 hasta 2L');
-      else if (category === 'commander') parts.push('1d6 hasta 2L');
-      else if (category === 'special') parts.push('1d6 hasta L');
-      if (wp.name === 'Bren' || wp.name === 'LMG Bren') parts.push('Cumbersome: no puede correr');
-      if (wp.name && wp.name.includes('Vickers')) parts.push('Cumbersome; Unlimber obligatorio; HE');
-      return parts.join(' | ');
-    }
-    function collectRulesRef(t, state, D, E) {
-      const rules = [];
-      const nationRules = {
-        'Gran Bretaña': { name: 'Estoicos', desc: 'Una vez por turno, cuando un equipo británico sea objetivo de un asalto, antes de resolverlo tira 1D12; con éxito retira un marcador de activación de esa unidad.', cond: null },
-        'Gran Bretaña': { name: 'Preparación', desc: 'Después del despliegue y antes del primer turno tira 1D8; con éxito obtiene un bombardeo preparatorio.', cond: null },
-        'Francia': { name: 'Furia', desc: 'Al declarar un asalto, tira 1D12; si aciertas ganas +1★ en la reserva de asalto.', cond: null },
-        'Alemania': { name: 'Iniciativa', desc: 'En empate de iniciativa, el jugador alemán puede repetir la tirada y quedarse con el segundo resultado.', cond: null },
-        'Italia': { name: 'Avanti!', desc: 'Una vez por turno, tras revelar carta, si tu iniciativa es inferior puedes tirar 1D12; con éxito tu carta cuenta como superior.', cond: null },
-        'URSS': { name: 'Comisario / Ura!', desc: 'Comisario gratis en el núcleo; Ura! da +1★ en asalto si hay un comisario a M.', cond: null },
-      };
-      Object.entries(nationRules).forEach(([nat, rule]) => {
-        if (t.units.some(u => u.name.includes(nat) || true)) {
-          rules.push({ name: rule.name, desc: rule.desc, cond: rule.cond });
-        }
-      });
-      if (state.elite || D.ALWAYS_ELITE) rules.push({ name: 'Élite', desc: 'Toda la infantería elegible (núcleo + apoyos orgánicos) gana +3★ global. No afecta a vehículos divisionales.', cond: 'Coste 3★ global' });
-      if (state.smg > 0) rules.push({ name: 'Conversión a SMG', desc: 'Retirar hasta 2 figuras (fusileros/servidores). Por cada una, hasta 2 fusiles → subfusiles. Máx 4 SMG totales.', cond: `${state.removed} figs retiradas, ${state.smg} conversiones` });
-      if (t.diamonds > 0) rules.push({ name: 'Pago de rombo (♦)', desc: 'Cada ♦ requiere descartar 2 figuras de la fuerza o 2 fusileros de refuerzo sin colocar. El francotirador cuesta 1♦.', cond: `${t.diamonds}♦ = ${t.diamondPaid} figuras` });
-      if (state.motoModule) rules.push({ name: 'Reconocimiento motorizado', desc: 'Módulo base 1★ (3 figs, 1 veh). Módulo opcional +1★ (2º veh, +2 figs + 1 hueco). Puede cambiar Bren→fusilero (-1★).', cond: state.brenSwap ? 'Bren→fusilero activo' : null });
-      if (state.equipment.eq_smg && state.smg > 0) rules.push({ name: 'Subfusiles', desc: 'Hasta 2 figuras retiradas → 2 fusiles→SMG por figura. Máx 4 SMG.', cond: `${state.removed} retiradas, ${state.smg} SMG` });
-      if (state.divisionalBonus) rules.push({ name: 'Bonificación divisional', desc: 'Primer apoyo divisional +1★ (o según regla).', cond: null });
-      if (state.recruit) rules.push({ name: 'Recluta', desc: 'Coste 0★ para el apoyo especificado; -1◇ en reclutas.', cond: null });
-      if (state.equipment.eq_elite) rules.push({ name: 'Élite', desc: 'Infantería núcleo + apoyos orgánicos +3★. No vehículos división.', cond: 'Coste 3★' });
-      return rules;
+      return [...profiles.values()];
     }
     function render() {
+      const openTransports = new Set([...container.querySelectorAll("[data-transport-slot][open]")].map(el => el.dataset.transportSlot));
       const openAssignments = [...container.querySelectorAll('details.assignment-alternative[open]')].map(el => el.dataset.purchase);
       const t = E.calculate(state), rem = t.budget - t.stars;
       renderTotals = t;
@@ -527,6 +484,9 @@ ${rulesRef.length > 0 ? `
           (selected || v.cost > 0 ? button(selected ? 'Quitar vehículo' : 'Añadir vehículo', 'vehicle', v.id) : '') +
           v.options.map(o => `<div class="vehicle-option"><p>${esc(o.name)} · +${o.cost}★</p>` + button(selected && state.vehicles[v.id].includes(o.id) ? 'Quitar opción' : 'Añadir opción', 'option', v.id, o.id)).join('') + '</article>';
       }).join('');
+      container.querySelectorAll("[data-transport-slot]").forEach(el => { el.open = openTransports.has(el.dataset.transportSlot); });
+      $("organicCount").textContent = t.units.filter(u => u.support || u.figures.some(f => f.support)).length + " seleccionados";
+      $("divisionalCount").textContent = Object.keys(state.vehicles).length + " seleccionados";
       const values = { sumMinis: t.minis, sumCore: t.core, sumReinf: t.reinforcements, sumFire: t.fire, sumVeh: t.vehicles,
         sumCost: t.stars, sumRemain: rem, sumDiamond: t.diamonds, sumGreyFree: t.free, sumGreyUsed: t.usedGrey };
       Object.entries(values).forEach(([id, value]) => { $(id).textContent = value; });

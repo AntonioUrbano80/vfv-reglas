@@ -110,3 +110,24 @@ body[data-view="ejercito"] .main { max-width: 1180px; }
   .oob-demo .budget-bar { gap: 10px 14px; }
   .oob-demo .budget-bar .pill { margin-left: 0; }
 }
+.oob-demo .builder-disclosure > summary,
+.oob-demo .transport-disclosure > summary {
+  cursor: pointer;
+  padding: .65rem .8rem;
+  border: 1px solid currentColor;
+  border-radius: .5rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.oob-demo .builder-disclosure > summary span {
+  margin-inline-start: .5rem;
+  font-size: .8em;
+  font-weight: 400;
+}
+.oob-demo .builder-disclosure[open] > summary,
+.oob-demo .transport-disclosure[open] > summary {
+  margin-bottom: .65rem;
+}
+.oob-demo .transport-disclosure {
+  margin-block: .4rem;
+}
