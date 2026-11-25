@@ -25,7 +25,7 @@ window.VFV_EARLY_ORDERS = [
   ['Unión Soviética', 'Paracaidistas', '1941–1942', 33, [34, 35]],
   ['Bélgica', 'Infantería', 'Campaña de 1940', 37, [38]],
   ['Polonia', 'Infantería', 'Campaña de 1939', 39, [40]],
-  ['Finlandia', 'Infantería', 'Guerra de Invierno y Guerra de Continuación', 41, [42]],
+  ['Finlandia', 'Infantería', 'Guerra de Continuación, 1941–1943', 41, [42]],
   ['Estados Unidos', 'Infantería', 'Norte de África y Sicilia, 1942–1943', 43, [45, 46]],
   ['Estados Unidos', 'Infantería mecanizada', 'Norte de África y Sicilia, 1942–1943', 44, [45, 46]],
 ].map(([nation, name, context, page, supportPages]) => ({ nation, name, context, page, supportPages }));

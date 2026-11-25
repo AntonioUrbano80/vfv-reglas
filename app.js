@@ -152,7 +152,7 @@ function render() {
     gce: viewGce,
     docs: viewDocs,
     mas: viewMas,
-    ejercito: () => window.VFVBuilder.mount(main),
+    ejercito: () => window.VFVBuilder.mount(main, { roster: state.roster }),
     early: viewEarlyOrders,
   }[state.view] || viewBuscar;
   fn();
@@ -1488,11 +1488,12 @@ function viewEarlyOrders() {
       <strong>${escape(order.name)}</strong><p class="note-line">${escape(order.context)}</p>
       <div class="refs"><strong>Orden de batalla</strong> ${page(order.page)}</div>
       <div class="refs"><strong>Apoyo divisional</strong> ${order.supportPages.map(page).join('')}</div>
-      ${order.page === 24 ? '<button class="btn" id="early-builder" type="button">Construir lista · Francia 1940</button>' : ''}
+      ${window.VFVBuilder.rosterForPage(order.page) ? `<button class="btn" ${order.page === 24 ? 'id="early-builder"' : ''} data-builder-page="${order.page}" type="button">Construir lista</button>` : ''}
     </article>`).join('')}</div>`).join('')}
   </section>`);
   wrap.querySelector('#early-back').addEventListener('click', () => go('mas'));
-  wrap.querySelector('#early-builder')?.addEventListener('click', () => go('ejercito'));
+  wrap.querySelectorAll('[data-builder-page]').forEach(button => button.addEventListener('click', () =>
+    go('ejercito', { roster: window.VFVBuilder.rosterForPage(Number(button.dataset.builderPage)) })));
   main.appendChild(wrap);
 }
 
@@ -1500,7 +1501,7 @@ function viewMas() {
   const local = !!window.VFV_LOCAL;
   const items = [
     ['early', 'bandera', 'Órdenes de batalla 1939–1943', 'Índice del suplemento por nación, con páginas de cada lista y sus apoyos'],
-    ['ejercito', 'bandera', 'Constructor de listas', 'Infantería británica · Francia 1940, con refuerzos de asignación manual'],
+    ['ejercito', 'bandera', 'Constructor de listas', 'Órdenes de batalla del suplemento, con refuerzos de asignación manual'],
     ['mesa', 'dado', 'Herramientas', 'Dados, eventos aleatorios y control de unidades'],
     ['secuencia', 'turno', 'Turno paso a paso', 'Lista de comprobación de cada fase'],
     ['gce', 'bandera', 'Suplemento GCE', `${GCE.facciones.length} facciones de la Guerra Civil Española`],
